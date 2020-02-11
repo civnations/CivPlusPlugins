@@ -1,0 +1,10 @@
+.idea/
+.settings/
+.classpath
+.project
+
+bazel-*
+
+*.eml
+*.iml
+*.jar
