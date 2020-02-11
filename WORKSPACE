@@ -48,12 +48,17 @@ maven_install(
     fail_on_missing_checksum = False,
 )
 
-local_repository(
-  name = "Spigot",
-  path = __workspace_dir__ + "/Spigot/",
+# Makes Kotlin work
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+rules_kotlin_version = "legacy-1.3.0"
+rules_kotlin_sha = "4fd769fb0db5d3c6240df8a9500515775101964eebdf85a3f9f0511130885fde"
+http_archive(
+    name = "io_bazel_rules_kotlin",
+    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/%s.zip" % rules_kotlin_version],
+    type = "zip",
+    strip_prefix = "rules_kotlin-%s" % rules_kotlin_version,
+    sha256 = rules_kotlin_sha,
 )
-
-local_repository(
-  name = "CivModCore",
-  path = __workspace_dir__ + "/CivModCore/",
-)
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+kotlin_repositories()
+kt_register_toolchains()
