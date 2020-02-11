@@ -23,5 +23,5 @@ def _civ_plugin_kt_jar(name, version, srcs, resources = [], deps = []):
   )
 
 civ_plugin_kt_jar = rule(
-  implementation = _civ_pluginkt__jar,
+  implementation = _civ_plugin_kt_jar,
 )
