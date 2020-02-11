@@ -46,25 +46,25 @@ public final class Bastion extends ACivMod {
 		registerNameLayerPermissions();
 		blockManager = new BastionBlockManager();
 		groupManager = new BastionGroupManager(Bastion.groupStorage);
-		
+
 		if(!this.isEnabled()) //check that the plugin was not disabled in setting up any of the static variables
 			return;
-		
+
 		BastionType.startRegenAndErosionTasks();
 		registerListeners();
 		setupCommands();
 	}
-	
+
 	@Override
 	public void onDisable() {
 		blockStorage.close();
 		groupStorage.close();
 	}
-	
+
 	public String getPluginName() {
 		return "Bastion";
 	}
-	
+
 	private void registerListeners() {
 		getLogger().log(Level.INFO, "Registering Listeners");
 		getServer().getPluginManager().registerEvents(new BastionDamageListener(), this);
@@ -110,7 +110,7 @@ public final class Bastion extends ACivMod {
 		groupStorage = new BastionGroupStorage(db, getLogger());
 		groupStorage.loadGroups();
 	}
-	
+
 	//Sets up the command managers
 	private void setupCommands(){
 		getCommand("Bastion").setExecutor(new BastionCommandManager());
@@ -129,11 +129,11 @@ public final class Bastion extends ACivMod {
 	public static Bastion getPlugin() {
 		return plugin;
 	}
-	
+
 	public static BastionBlockManager getBastionManager() {
 		return blockManager;
 	}
-	
+
 	public static BastionBlockStorage getBastionStorage() {
 		return blockStorage;
 	}

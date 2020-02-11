@@ -14,6 +14,6 @@ def civ_plugin_kt_jar(name, version, srcs, resources = [], deps = []):
   native.genrule(
      name = "civ_plugin_kt_jar_rename",
      outs = ["{}-{}.jar".format(name, version)],
-     srcs = ["lib{}.jar".format(name)],
+     srcs = ["{}.jar".format(name)],
      cmd = "cp $< $@",
   )

@@ -29,7 +29,9 @@ maven_install(
       "org.apache.logging.log4j:log4j-core:2.7",
       "com.github.seancfoley:ipaddress:2.0.1",
       "org.jsoup:jsoup:1.10.2",
-
+      "me.confuser:BarAPI:3.5",
+      "com.connorlinfoot:ActionBarAPI:1.1",
+      "org.inventivetalent:BossBarAPI:1.0.5",
     ],
     repositories = [
       "https://jcenter.bintray.com/",
@@ -44,6 +46,8 @@ maven_install(
       "https://papermc.io/repo/repository/maven-public/",
       # ProtocolLib
       "https://repo.dmulloy2.net/nexus/repository/public/",
+      # CTPlus uses for BarAPI, BossBarAPI, ActionBarAPI
+      "http://repo.byteflux.net/repository/maven-public/",
     ],
     fail_on_missing_checksum = False,
 )
@@ -60,5 +64,15 @@ http_archive(
     sha256 = rules_kotlin_sha,
 )
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
-kotlin_repositories()
+
+KOTLIN_VERSION = "1.3.61"
+KOTLINC_RELEASE_SHA = "3901151ad5d94798a268d1771c6c0b7e305a608c2889fc98a674802500597b1c"
+KOTLINC_RELEASE = {
+    "urls": [
+        "https://github.com/JetBrains/kotlin/releases/download/v{v}/kotlin-compiler-{v}.zip".format(v = KOTLIN_VERSION),
+    ],
+    "sha256": KOTLINC_RELEASE_SHA,
+}
+kotlin_repositories(compiler_release = KOTLINC_RELEASE)
+
 kt_register_toolchains()
