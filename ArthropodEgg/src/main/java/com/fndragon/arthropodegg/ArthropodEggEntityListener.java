@@ -81,7 +81,7 @@ public class ArthropodEggEntityListener implements Listener {
 		// Check if egg should be spawned
 		if( randomNum < targetPercentage )
 		{
-      Material mat = SpawnEggAPI.getSpawnEgg( event.getEntityType() );
+      		Material mat = SpawnEggAPI.getSpawnEgg( event.getEntityType() );
 			ItemStack item = new ItemStack(mat, 1);
 
 			if( plugin.getConfig().getBoolean("eggRemoveDrops")) {
