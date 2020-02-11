@@ -11,12 +11,12 @@ import org.bukkit.event.Listener
 class EnchantingTweaks: Hack(), Listener {
 	override val configName = "oldEnchanting"
 	override val prettyName = "Old Enchanting"
-	
+
 	private val hideEnchantTooltops = config.getBoolean("hideEnchantmentTooltops")
 	private val enchantCostMultiplier = config.getDouble("enchantCostMultiplier")
-	
+
 	init {
-		class EnchantPacketAdapter : PacketAdapter(Bumhug.instance!!, PacketType.Play.Server.WINDOW_DATA) {
+		class EnchantPacketAdapter : PacketAdapter(Bumhug.instance, PacketType.Play.Server.WINDOW_DATA) {
 			override fun onPacketSending(event: PacketEvent) {
 				val property = event.packet.integers.read(1);
 				when (property) {

@@ -6,9 +6,9 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.command.CommandSender
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftInventoryPlayer
-import org.bukkit.craftbukkit.v1_12_R1.CraftServer
-import net.minecraft.server.v1_12_R1.WorldNBTStorage
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftInventoryPlayer
+import org.bukkit.craftbukkit.v1_15_R1.CraftServer
+import net.minecraft.server.v1_15_R1.WorldNBTStorage
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.command.Command
@@ -42,7 +42,7 @@ class InvSee: Hack(), CommandExecutor {
         }
 
         if (player == null && playerUUID != null) { // Go deep into NBT.
-            val storage = (Bumhug.instance.server as CraftServer).server.worlds[0].dataManager as WorldNBTStorage
+            val storage = (Bumhug.instance.server as CraftServer).worlds[0].dataManager as WorldNBTStorage
             val rawPlayer = storage.getPlayerData(playerUUID.toString())
 
             if (rawPlayer != null) {
@@ -57,7 +57,7 @@ class InvSee: Hack(), CommandExecutor {
             val food = rawPlayer.getInt("foodLevel")
 
             // Fun NMS inventory reconstruction from file data.
-            val nmsPlayerInv = net.minecraft.server.v1_12_R1.PlayerInventory(null)
+            val nmsPlayerInv = net.minecraft.server.v1_15_R1.PlayerInventory(null)
             val playerInvNBT = rawPlayer.getList("Inventory", rawPlayer.typeId.toInt())
             nmsPlayerInv.b(playerInvNBT) // We use this to bypass the Craft code which requires a player object, unlike NMS.
             val playerInv = CraftInventoryPlayer(nmsPlayerInv) as PlayerInventory
@@ -110,14 +110,14 @@ class InvSee: Hack(), CommandExecutor {
             inv.setItem(41, playerInv.getBoots())
 
             val healthItem = ItemStack(Material.APPLE, health.toInt() * 2)
-            val healthData = healthItem.itemMeta
-            healthData.displayName = "Player Health"
+            val healthData = healthItem.itemMeta!!
+            healthData.setDisplayName("Player Health")
             healthItem.itemMeta = healthData
             inv.setItem(43, healthItem)
 
             val hungerItem = ItemStack(Material.COOKED_BEEF, food)
-            val hungerData = hungerItem.itemMeta
-            hungerData.displayName = "Player Hunger"
+            val hungerData = hungerItem.itemMeta!!
+            hungerData.setDisplayName("Player Hunger")
             hungerItem.itemMeta = hungerData
             inv.setItem(44, hungerItem)
             sender.openInventory(inv)

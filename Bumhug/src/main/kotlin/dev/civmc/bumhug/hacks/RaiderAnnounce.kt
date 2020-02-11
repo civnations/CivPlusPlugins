@@ -16,20 +16,21 @@ import dev.civmc.bumhug.Depend
 public class RaiderAnnounce: Hack(), Listener {
 	override val configName = "raiderAnnounce"
 	override val prettyName = "Raider Announce"
-	
+
 	private val message = config.getString("message") ?: "&4%Name% is raiding a chest at %X%, %Y%, %Z%."
 	// seconds
 	private val messageDelay = config.getInt("delay")
-	
+
 	private val lastAlertSent = HashMap<Player, Long>()
-	
+
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onReinforcementBreak(event: BlockBreakEvent) {
-		val man = Citadel.getReinforcementManager()
+		val man = Citadel.getInstance().getReinforcementManager()
 		if (man == null) {
 			return
 		}
-		if (man.isReinforced(event.block) && (event.block.type == Material.CHEST || event.block.type == Material.TRAPPED_CHEST)) {
+		val isReinforced = man.getReinforcement(event.block) != null
+		if (isReinforced && (event.block.type == Material.CHEST || event.block.type == Material.TRAPPED_CHEST)) {
 			val last: Long? = lastAlertSent.get(event.player)
 			val now = System.currentTimeMillis()
 			if (last == null) {
@@ -39,7 +40,7 @@ public class RaiderAnnounce: Hack(), Listener {
 			} else {
 				lastAlertSent.put(event.player, now)
 			}
-			
+
 			val cleanMessage = ChatColor.translateAlternateColorCodes('&',
 				message
 				.replace("%Name%", event.player.displayName)

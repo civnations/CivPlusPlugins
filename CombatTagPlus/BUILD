@@ -7,5 +7,8 @@ civ_plugin_jar(
     resources = glob(["src/main/resources/**"]),
     deps = [
       "//Spigot:Spigot",
+      "@maven//:me_confuser_BarAPI",
+      "@maven//:com_connorlinfoot_ActionBarAPI",
+      "@maven//:org_inventivetalent_BossBarAPI",
     ],
 )
