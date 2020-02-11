@@ -1,0 +1,79 @@
+gameFeatures:
+  enabled: true
+  pistons: true
+  hoppers: true
+  packedIceInHell: false
+  villagerTrading: false
+  shulkerBoxUse: false
+  enderChestUse: false
+  enderChestPlacement: true
+  disableElytraFirework: true
+  minecartTeleporter: true
+  endermanGrief: false
+gameFixes:
+  preventFallingThroughBedrock: true
+  preventBedBombing: true
+  preventStorageTeleport: true
+ctAnnounce:
+  enabled: true
+  delay: 10000
+  message: "&4%Victim% was combat tagged by %Attacker%"
+chunkLimits:
+  enabled: true
+  message: "&9You've exceeded the chunk limit for that block type!"
+  limits:
+    REDSTONE_DUST: 16
+    PISTON_BASE: 10
+    STICKY_PISTON_BASE: 10
+    HOPPER: 16
+    OBSERVER: 2
+daytimeBed:
+  enabled: true
+  message: "&7Your spawn has been set."
+raiderAnnounce:
+  enabled: true
+  message: "&4%Name% is raiding a chest at %X%, %Y%, %Z%."
+  delay: 10000
+newfriendAssist:
+  enabled: true
+  message: "&6%Name% is new to the server!"
+  newfriendKit:
+    cookie:
+      material: COOKIE
+      name: Manna
+      lore:
+      - A gift from the admins as you begin your journey on Civ
+      amount: 64
+    bed:
+      material: BED
+      amount: 1
+deathMessages:
+  enabled: true
+  sendPlayerCoordsOnDeath: true
+  announceDeaths: true
+  redDeathMessages: true
+obsidianGenerators:
+  enabled: true
+intervalAnnouncement:
+  enabled: true
+  announcements:
+    hourlymessage:
+      message: hourly message
+      intervalHours: 1
+    discord:
+      message: Join our discord at http://discord.gg/XXXXXXX
+      intervalHours: 0.5 # You could also say this as intervalMinutes: 30
+    patreon:
+      message: Join our patreon at http://patreon.com/XXXXXX
+      intervalMinutes: 25
+     #permission: patreon.notsubscribed # commented out since the permission doesn't exist
+    completeformat:
+      intervalDays: 0.05
+      intervalHours: 3
+      intervalMinutes: 2
+      intervalSeconds: 100
+      # All of these can be used at once, as they're converted to seconds and summed up.
+      # Fractional seconds will be ignored.
+      message: "&5Color codes can also be used, but need to be in quotes if they start with an ampersand"
+      permission: bumhug.intervalannouncement.everyone
+      # Can be any permission. This one is the default, and anyone with the permission will receive that announcement.

@@ -1,0 +1,42 @@
+name: ${name}
+version: ${version}
+main: ${groupId}.${name}
+author: Soer
+softdepend: [CombatTagPlus, Citadel]
+
+permissions:
+  bumhug.*:
+    description: Gives all Bumhug permissions
+    default: op
+    children:
+      bumhug.broadcastCombat: true
+  bumhug.broadcastCombat:
+    description: Receive broadcasts when a player is combat-tagged
+    default: op
+  bumhug.bypassChunkLimits:
+    description: Place blocks in chunks that have exceeded the chunk limit for that type of block
+    default: op
+  bumhug.broadcastRaiding:
+    description: Receive broadcasts when a player is breaking a reinforced chest
+    default: op
+  bumhug.reloadInventory:
+    description: Reload a player's inventoy from before the last time they died
+    default: op
+  bumhug.ping:
+    description: Get your own ping with a command
+    default: true
+  bumhug.ping.other:
+    description: Get another player's ping
+    default: op
+  bumhug.intervalannouncement.everyone:
+    description: Used to send an interval message to everyone when another permission isn't provided
+    default: true
+commands:
+  reloadinventoy:
+    description: Reload a player's inventoy from before the last time they died
+    permission: bumhug.reloadInventory
+    usage: /reloadinventory [playername:UUID]
+  ping:
+    description: Get the ping of yourself or another player
+    permission: bumhug.ping
+    usage: /ping [playername:UUID]
