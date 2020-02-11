@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.command.CommandSender
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftInventoryPlayer
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld
 import net.minecraft.server.v1_15_R1.WorldNBTStorage
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -42,7 +43,7 @@ class InvSee: Hack(), CommandExecutor {
         }
 
         if (player == null && playerUUID != null) { // Go deep into NBT.
-            val storage = (Bumhug.instance.server as CraftServer).worlds[0].dataManager as WorldNBTStorage
+            val storage = (Bukkit.getWorlds().get(0) as CraftWorld).getHandle().getDataManager() as WorldNBTStorage
             val rawPlayer = storage.getPlayerData(playerUUID.toString())
 
             if (rawPlayer != null) {
