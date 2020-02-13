@@ -1,6 +1,6 @@
 name: ${name}
 version: ${version}
-main: ${groupId}.${name}
+main: dev.civmc.bumhug.Bumhug
 author: Soer
 softdepend: [CombatTagPlus, Citadel]
 
