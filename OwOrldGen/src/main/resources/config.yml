@@ -1,0 +1,45 @@
+world:
+  maxReasonableDistance: 10000 # the max distance where some numbers stop increasing: what may or may not be the world border
+  generateBedrock: true
+  stoneLayer:
+    avg: 20
+    min: 10
+  surfaceLayer:
+    height: 40 # this is added to the stone layer's generated y value to get the y value of the surface
+    maxModifier: 20 # measures how much the surface can be modified
+  biomes:
+    borderAmplitide: 40 # the amplutide of the waves seperating each biome: measured in blocks for the desert biome but unspecified for snow, applies to both
+    borderFrequency: 50 # the frequency of the waves seperating biomes: in blocks for desert but unspecified for snow
+    onlyForest: false # ignore the desert and tundra radius and make everything forest
+    desertRadius: 3333 # how far away from 0,0 the desert starts
+    tundraRadius: 6666 # how far from 0,0 the tundra is
+    materials:
+      desert:
+        top: SAND
+        mid: SAND
+      forest:
+        top: GRASS
+        mid: DIRT
+  scale:
+    min: 0.025 # the scale for generating the terrain at 0,0: smaller numbers generate larger landmasses
+    max: 0.04  # the scale at r=maxReasonableDistance: larger numbers mean smaller, more numerous landmasses
+  density:
+    # ranges from -1 to 1
+    max: 0.8 # the threshold for noise at 0,0: larger numbers result in smaller, more spaced out landmasses
+    min: 0.6 # the threshold at r=maxReasonableDistance: smaller numbers result in larger, closer together landmasses
+  populators:
+    tree:
+      biomeScale: 0.0005 # the scale of noise to be used for each of the tree types: smaller numbers result in larger "boimes"
+      treeSpacing: 1.1 # how far apart each tree should be: in no piticular unit
+      treeThreshold: 0.8 # the value of red noise needed to spawn a tree: probably doesn't need touched, but from -1 to 1
+    tallGrass:
+      scale: 0.05
+    desertTree:
+      spawnChance: 0.0005
+    desertCactus:
+      spawnChance: 0.005
+    iceWorm:
+      scale: 0.03
+      maxThreshold: 1.0 # The threshold for a block to be ice at the beginning at the tundra biome: larger values make a block less likely to be
+      minThreshold: 0.4 # the threshold at the max reasonable distance
+

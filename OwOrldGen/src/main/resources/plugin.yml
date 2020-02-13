@@ -1,0 +1,5 @@
+name: OwOrldGen
+version: 0.0.0
+main: dev.civmc.oworldgen.OwOrldGen
+authors: [Amelorate, SepiaTones]
+load: STARTUP
