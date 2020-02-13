@@ -70,7 +70,7 @@ def civ_plugin_kt_jar(name, version, deps = []):
     resources = native.glob(
       ["src/main/resources/**"],
       exclude = ["src/main/resources/template_plugin.yml"],
-    ) + [":plugin_yml"],
+    ),# + [":plugin_yml"],
     visibility = ["//visibility:public"]
   )
   
