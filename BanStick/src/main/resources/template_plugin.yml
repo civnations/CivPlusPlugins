@@ -1,5 +1,5 @@
-name: ${project.name}
-version: ${project.version}
+name: ${name}
+version: ${version}
 author: [ProgrammerDan]
 depend: [CivModCore]
 softdepend: [IP-Check, NameLayer]

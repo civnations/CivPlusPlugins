@@ -1,4 +1,4 @@
-name: VanishNoPacket
+name: ${name}
 main: org.kitteh.vanish.VanishPlugin
 version: ${version}
 website: http://kitteh.org

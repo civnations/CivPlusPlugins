@@ -1,9 +1,8 @@
-name: ${project.name}
+name: ${name}
 main: com.programmerdan.minecraft.wordbank.WordBank
 author: ProgrammerDan
 authors: []
-version: ${project.version}
-api-version: 1.13
+version: ${version}
 commands:
   wordbank:
     description: |

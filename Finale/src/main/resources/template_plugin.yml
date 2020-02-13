@@ -1,10 +1,9 @@
-name: ${project.name}
+name: ${name}
 main: com.github.maxopoly.finale.Finale
 author: Maxopoly
-version: ${project.version}
+version: ${version}
 depend: [CivModCore, ProtocolLib]
 softdepend: [CombatTagPlus]
-api-version: 1.13
 commands:
     finalereload:
         permission: finale.op
