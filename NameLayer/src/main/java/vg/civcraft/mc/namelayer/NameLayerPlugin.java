@@ -52,7 +52,7 @@ public class NameLayerPlugin extends ACivMod{
 		createGroupOnFirstJoin = config.getBoolean("groups.creationOnFirstJoin", true);
 		instance = this;
 		loadDatabases();
-	    ClassHandler.Initialize(Bukkit.getServer());
+	  ClassHandler.Initialize(Bukkit.getServer());
 		new NameAPI(new GroupManager(), associations);
 		NameCleanser.load(config.getConfigurationSection("name_cleanser"));
 		registerListeners();
