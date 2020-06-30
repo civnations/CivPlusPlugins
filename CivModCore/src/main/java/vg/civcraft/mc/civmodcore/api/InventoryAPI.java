@@ -1,29 +1,45 @@
 package vg.civcraft.mc.civmodcore.api;
 
+import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.AnvilInventory;
-import org.bukkit.inventory.BeaconInventory;
-import org.bukkit.inventory.BrewerInventory;
-import org.bukkit.inventory.CartographyInventory;
-import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.EnchantingInventory;
-import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.GrindstoneInventory;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.LecternInventory;
-import org.bukkit.inventory.LoomInventory;
-import org.bukkit.inventory.MerchantInventory;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.StonecutterInventory;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import vg.civcraft.mc.civmodcore.util.Iteration;
 
 public final class InventoryAPI {
 
-	private InventoryAPI() { }
+	/**
+	 * Tests an inventory to see if it's valid.
+	 *
+	 * @param inventory The inventory to test.
+	 * @return Returns true if it's more likely than not valid.
+	 */
+	public static boolean isValidInventory(Inventory inventory) {
+		if (inventory == null) {
+			return false;
+		}
+		if (inventory.getSize() <= 0) {
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Get the players viewing an inventory.
@@ -32,232 +48,415 @@ public final class InventoryAPI {
 	 * @return Returns a list of players. Returns an empty list if the inventory is null.
 	 * */
 	public static List<Player> getViewingPlayers(Inventory inventory) {
-		if (inventory == null) {
+		if (!isValidInventory(inventory)) {
 			return new ArrayList<>();
 		}
-		return inventory
-				.getViewers()
-				.stream()
-				.map((entity) -> EntityAPI.isPlayer(entity) ? (Player) entity : null)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toCollection(ArrayList::new));
+		return inventory.getViewers().stream().
+				map((entity) -> EntityAPI.isPlayer(entity) ? (Player) entity : null).
+				filter(Objects::nonNull).
+				collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	private static boolean checkInventory(Inventory inventory, InventoryType... types) {
+	/**
+	 * <p>Attempts to find the first safe place to put an item.</p>
+	 *
+	 * @param inventory The inventory to attempt to find a slot in.
+	 * @param item The item to find a place for.
+	 * @return Returns an index of a slot that it's safe to add to. A return value of -1 means no safe place. Even if
+	 *     the return value is -1 it may still be <i>possible</i> to add the item stack to the inventory, as this
+	 *     function attempts to find the first slot that the given item stack can fit into wholly; that if it can
+	 * 	   technically fit but has to be distributed then there's no "first empty".
+	 */
+	public static int firstEmpty(Inventory inventory, ItemStack item) {
 		if (inventory == null) {
-			return false;
+			return -1;
 		}
-		if (types == null) {
-			return false;
+		// If there's a slot free, then just return that. Otherwise if
+		// the item is invalid, just return whatever slot was returned.
+		int index = inventory.firstEmpty();
+		if (index >= 0 || !ItemAPI.isValidItem(item)) {
+			return index;
 		}
-		for (InventoryType type : types) {
-			if (inventory.getType() == type) {
-				return true;
+		// If gets here, then we're certain that there's no stacks free.
+		// If the amount of the item to add is larger than a stack, then
+		// it can't be merged with another stack. So just back out.
+		int remainder = item.getMaxStackSize() - item.getAmount();
+		if (remainder <= 0) {
+			return -1;
+		}
+		// Find all items that match with the given item to see if there's
+		// a stack that can be merged with. If none can be found, back out.
+		for (Map.Entry<Integer, ? extends ItemStack> entry : inventory.all(item).entrySet()) {
+			if (entry.getValue().getAmount() <= remainder) {
+				return entry.getKey();
 			}
 		}
-		return false;
+		return -1;
 	}
 
-	public static Inventory getChestInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.CHEST)) {
-			return null;
-		}
-		return inventory;
+	/**
+	 * Clears an inventory of items.
+	 *
+	 * @param inventory The inventory to clear of items.
+	 */
+	public static void clearInventory(Inventory inventory) {
+		Preconditions.checkArgument(isValidInventory(inventory));
+		inventory.setContents(Iteration.fill(inventory.getContents(), null));
 	}
 
-	public static Inventory getDispenserInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.DISPENSER)) {
-			return null;
+	/**
+	 * Checks whether an inventory has more than one viewer.
+	 *
+	 * @param inventory The inventory to check.
+	 * @return Returns true if an inventory has multiple viewers.
+	 */
+	public static boolean hasOtherViewers(Inventory inventory) {
+		if (!isValidInventory(inventory)) {
+			return false;
 		}
-		return inventory;
+		return inventory.getViewers().size() > 1;
 	}
 
-	public static Inventory getDropperInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.DROPPER)) {
-			return null;
+	/**
+	 * Checks whether a certain amount of slots would be considered a valid chest inventory.
+	 *
+	 * @param slots The slot amount to check.
+	 * @return Returns true if the slot count is or between 1-6 multiples of 9.
+	 */
+	public static boolean isValidChestSize(int slots) {
+		if (slots <= 0 || slots > 54) {
+			return false;
 		}
-		return inventory;
+		if ((slots % 9) > 0) {
+			return false;
+		}
+		return true;
 	}
 
-	public static FurnaceInventory getFurnaceInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.FURNACE, InventoryType.BLAST_FURNACE, InventoryType.SMOKER)) {
-			return null;
+	/**
+	 * Will safely add a set of items to an inventory. If not all items are added, it's not committed to the inventory.
+	 *
+	 * @param inventory The inventory to add the items to.
+	 * @param items The items to add to the inventory.
+	 * @return Returns true if the items were safely added.
+	 */
+	public static boolean safelyAddItemsToInventory(Inventory inventory, ItemStack[] items) {
+		Preconditions.checkArgument(isValidInventory(inventory));
+		if (Iteration.isNullOrEmpty(items)) {
+			return true;
 		}
-		if (!(inventory instanceof FurnaceInventory)) {
-			return null;
+		Inventory clone = cloneInventory(inventory);
+		for (ItemStack itemToAdd : items) {
+			if (firstEmpty(clone, itemToAdd) < 0) {
+				return false;
+			}
+			if (!clone.addItem(itemToAdd).isEmpty()) {
+				return false;
+			}
 		}
-		return (FurnaceInventory) inventory;
+		inventory.setContents(clone.getContents());
+		return true;
 	}
 
-	public static Inventory getWorkbenchInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.WORKBENCH)) {
-			return null;
+	/**
+	 * Will safely remove a set of items from an inventory. If not all items are removed, it's not committed to the
+	 * inventory.
+	 *
+	 * @param inventory The inventory to remove the items from.
+	 * @param items The items to remove to the inventory.
+	 * @return Returns true if the items were safely removed.
+	 */
+	public static boolean safelyRemoveItemsFromInventory(Inventory inventory, ItemStack[] items) {
+		Preconditions.checkArgument(isValidInventory(inventory));
+		if (Iteration.isNullOrEmpty(items)) {
+			return true;
 		}
-		return inventory;
+		Inventory clone = cloneInventory(inventory);
+		for (ItemStack itemToRemove : items) {
+			if (!clone.removeItem(itemToRemove).isEmpty()) {
+				return false;
+			}
+		}
+		inventory.setContents(clone.getContents());
+		return true;
 	}
 
-	public static CraftingInventory getCraftingInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.CRAFTING)) {
-			return null;
+	/**
+	 * Will safely transact a set of items from one inventory to another inventory. If not all items are transacted, the
+	 * transaction is not committed.
+	 *
+	 * @param from The inventory to move the given items from.
+	 * @param items The items to transact.
+	 * @param to The inventory to move the given items to.
+	 * @return Returns true if the items were successfully transacted.
+	 */
+	public static boolean safelyTransactBetweenInventories(Inventory from, ItemStack[] items, Inventory to) {
+		Preconditions.checkArgument(isValidInventory(from));
+		Preconditions.checkArgument(isValidInventory(to));
+		if (Iteration.isNullOrEmpty(items)) {
+			return true;
 		}
-		if (!(inventory instanceof CraftingInventory)) {
-			return null;
+		Inventory fromClone = cloneInventory(from);
+		Inventory toClone = cloneInventory(to);
+		if (!safelyRemoveItemsFromInventory(fromClone, items)) {
+			return false;
 		}
-		return (CraftingInventory) inventory;
+		if (!safelyAddItemsToInventory(toClone, items)) {
+			return false;
+		}
+		from.setContents(fromClone.getContents());
+		to.setContents(toClone.getContents());
+		return true;
 	}
 
-	public static EnchantingInventory getEnchantingInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.ENCHANTING)) {
-			return null;
+	/**
+	 * Will safely trade items between inventories. If not all items are traded, the trade is cancelled.
+	 *
+	 * @param formerInventory The first inventory.
+	 * @param formerItems The items to trade from the first inventory to give to the second inventory.
+	 * @param latterInventory The second inventory.
+	 * @param latterItems The items to trade from the second inventory to give to the first inventory.
+	 * @return Returns true if the trade succeeded.
+	 */
+	public static boolean safelyTradeBetweenInventories(Inventory formerInventory, ItemStack[] formerItems,
+														Inventory latterInventory, ItemStack[] latterItems) {
+		Preconditions.checkArgument(isValidInventory(formerInventory));
+		Preconditions.checkArgument(isValidInventory(latterInventory));
+		Inventory formerClone = InventoryAPI.cloneInventory(formerInventory);
+		Inventory latterClone = InventoryAPI.cloneInventory(latterInventory);
+		if (!safelyRemoveItemsFromInventory(formerClone, formerItems)) {
+			return false;
 		}
-		if (!(inventory instanceof EnchantingInventory)) {
-			return null;
+		if (!safelyRemoveItemsFromInventory(latterClone, latterItems)) {
+			return false;
 		}
-		return (EnchantingInventory) inventory;
+		if (!safelyAddItemsToInventory(formerClone, latterItems)) {
+			return false;
+		}
+		if (!safelyAddItemsToInventory(latterClone, formerItems)) {
+			return false;
+		}
+		formerInventory.setContents(formerClone.getContents());
+		latterInventory.setContents(latterClone.getContents());
+		return true;
 	}
 
-	public static BrewerInventory getBrewingInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.BREWING)) {
+	/**
+	 * <p>Clones the given inventory for the purpose of test manipulating its contents.</p>
+	 *
+	 * <p>Note: Do not type check the inventory, it's JUST a contents copy within an inventory wrapper to provide the
+	 * relevant and useful methods.</p>
+	 *
+	 * @param inventory The inventory to clone.
+	 * @return Returns a clone of the given inventory.
+	 */
+	public static Inventory cloneInventory(Inventory inventory) {
+		if (inventory == null) {
 			return null;
 		}
-		if (!(inventory instanceof BrewerInventory)) {
-			return null;
+		if (inventory instanceof ClonedInventory) {
+			return inventory;
 		}
-		return (BrewerInventory) inventory;
+		Inventory clone;
+		if (inventory.getType() == InventoryType.CHEST) {
+			clone = Bukkit.createInventory(inventory.getHolder(), inventory.getSize());
+		}
+		else {
+			clone = Bukkit.createInventory(inventory.getHolder(), inventory.getType());
+		}
+		clone.setContents(Arrays.stream(inventory.getContents()).
+				map(item -> item == null ? null : item.clone()).
+				toArray(ItemStack[]::new));
+		return new ClonedInventory(clone);
 	}
 
-	public static PlayerInventory getPlayerInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.PLAYER)) {
-			return null;
-		}
-		if (!(inventory instanceof PlayerInventory)) {
-			return null;
-		}
-		return (PlayerInventory) inventory;
-	}
+	/**
+	 * Wrapper for cloned inventories intended to ensure that ClonedInventories aren't themselves cloned.
+	 */
+	public static final class ClonedInventory implements Inventory {
 
-	// TODO: Figure out which inventory class instance is being returned with a creative inventory
-	public static Inventory getCreativeInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.CREATIVE)) {
-			return null;
-		}
-		return inventory;
-	}
+		private final Inventory inventory;
 
-	public static MerchantInventory getMerchantInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.MERCHANT)) {
-			return null;
+		private ClonedInventory(Inventory inventory) {
+			this.inventory = inventory;
 		}
-		if (!(inventory instanceof MerchantInventory)) {
-			return null;
-		}
-		return (MerchantInventory) inventory;
-	}
 
-	public static Inventory getEnderChestInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.ENDER_CHEST)) {
-			return null;
+		@Override
+		public int getSize() {
+			return this.inventory.getSize();
 		}
-		return inventory;
-	}
 
-	public static AnvilInventory getAnvilInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.ANVIL)) {
-			return null;
+		@Override
+		public int getMaxStackSize() {
+			return this.inventory.getMaxStackSize();
 		}
-		if (!(inventory instanceof AnvilInventory)) {
-			return null;
-		}
-		return (AnvilInventory) inventory;
-	}
 
-	public static BeaconInventory getBeaconInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.BEACON)) {
-			return null;
+		@Override
+		public void setMaxStackSize(int size) {
+			this.inventory.setMaxStackSize(size);
 		}
-		if (!(inventory instanceof BeaconInventory)) {
-			return null;
-		}
-		return (BeaconInventory) inventory;
-	}
 
-	public static Inventory getHopperInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.HOPPER)) {
-			return null;
+		@Override
+		public ItemStack getItem(int index) {
+			return this.inventory.getItem(index);
 		}
-		return inventory;
-	}
 
-	public static Inventory getShulkerBoxInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.SHULKER_BOX)) {
-			return null;
+		@Override
+		public void setItem(int index, ItemStack item) {
+			this.inventory.setItem(index, item);
 		}
-		return inventory;
-	}
 
-	public static Inventory getBarrelInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.BARREL)) {
-			return null;
+		@Override
+		public HashMap<Integer, ItemStack> addItem(ItemStack... items) throws IllegalArgumentException {
+			return this.inventory.addItem(items);
 		}
-		return inventory;
-	}
 
-	public static FurnaceInventory getBlastFurnaceInventory(Inventory inventory) {
-		return getFurnaceInventory(inventory);
-	}
+		@Nonnull
+		@Override
+		public HashMap<Integer, ItemStack> removeItem(ItemStack... items) throws IllegalArgumentException {
+			return this.inventory.removeItem(items);
+		}
 
-	public static LecternInventory getLecternInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.LECTERN)) {
-			return null;
+		@Override
+		public ItemStack[] getContents() {
+			return this.inventory.getContents();
 		}
-		if (!(inventory instanceof LecternInventory)) {
-			return null;
-		}
-		return (LecternInventory) inventory;
-	}
 
-	public static FurnaceInventory getSmokerInventory(Inventory inventory) {
-		return getFurnaceInventory(inventory);
-	}
+		@Override
+		public void setContents(ItemStack[] items) throws IllegalArgumentException {
+			this.inventory.setContents(items);
+		}
 
-	public static LoomInventory getLoomInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.LOOM)) {
-			return null;
+		@Override
+		public ItemStack[] getStorageContents() {
+			return this.inventory.getStorageContents();
 		}
-		if (!(inventory instanceof LoomInventory)) {
-			return null;
-		}
-		return (LoomInventory) inventory;
-	}
 
-	public static CartographyInventory getCartographyInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.CARTOGRAPHY)) {
-			return null;
+		@Override
+		public void setStorageContents(ItemStack[] items) throws IllegalArgumentException {
+			this.inventory.setStorageContents(items);
 		}
-		if (!(inventory instanceof CartographyInventory)) {
-			return null;
-		}
-		return (CartographyInventory) inventory;
-	}
 
-	public static GrindstoneInventory getGrindstoneInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.GRINDSTONE)) {
-			return null;
+		@Override
+		public boolean contains(Material material) throws IllegalArgumentException {
+			return this.inventory.contains(material);
 		}
-		if (!(inventory instanceof GrindstoneInventory)) {
-			return null;
-		}
-		return (GrindstoneInventory) inventory;
-	}
 
-	public static StonecutterInventory getStoneCutterInventory(Inventory inventory) {
-		if (!checkInventory(inventory, InventoryType.STONECUTTER)) {
-			return null;
+		@Override
+		public boolean contains(ItemStack item) {
+			return this.inventory.contains(item);
 		}
-		if (!(inventory instanceof StonecutterInventory)) {
-			return null;
+
+		@Override
+		public boolean contains(Material material, int amount) throws IllegalArgumentException {
+			return this.inventory.contains(material, amount);
 		}
-		return (StonecutterInventory) inventory;
+
+		@Override
+		public boolean contains(ItemStack item, int amount) {
+			return this.inventory.contains(item, amount);
+		}
+
+		@Override
+		public boolean containsAtLeast(ItemStack item, int amount) {
+			return this.inventory.containsAtLeast(item, amount);
+		}
+
+		@Override
+		public HashMap<Integer, ? extends ItemStack> all(Material material) throws IllegalArgumentException {
+			return this.inventory.all(material);
+		}
+
+		@Override
+		public HashMap<Integer, ? extends ItemStack> all(ItemStack item) {
+			return this.inventory.all(item);
+		}
+
+		@Override
+		public int first(Material material) throws IllegalArgumentException {
+			return this.inventory.first(material);
+		}
+
+		@Override
+		public int first(ItemStack item) {
+			return this.inventory.first(item);
+		}
+
+		@Override
+		public int firstEmpty() {
+			return this.inventory.firstEmpty();
+		}
+
+		@Override
+		public void remove(Material material) throws IllegalArgumentException {
+			this.inventory.remove(material);
+		}
+
+		@Override
+		public void remove(ItemStack item) {
+			this.inventory.remove(item);
+		}
+
+		@Override
+		public void clear(int index) {
+			this.inventory.clear(index);
+		}
+
+		@Override
+		public void clear() {
+			this.inventory.clear();
+		}
+
+		@Override
+		public List<HumanEntity> getViewers() {
+			return this.inventory.getViewers();
+		}
+
+		@Override
+		public InventoryType getType() {
+			return this.inventory.getType();
+		}
+
+		@Override
+		public InventoryHolder getHolder() {
+			return this.inventory.getHolder();
+		}
+
+		@Nonnull
+		@Override
+		public ListIterator<ItemStack> iterator() {
+			return this.inventory.iterator();
+		}
+
+		@Override
+		public void forEach(Consumer<? super ItemStack> action) {
+			this.inventory.forEach(action);
+		}
+
+		@Override
+		public Spliterator<ItemStack> spliterator() {
+			return this.inventory.spliterator();
+		}
+
+		@Override
+		public ListIterator<ItemStack> iterator(int index) {
+			return this.inventory.iterator(index);
+		}
+
+		@Override
+		public Location getLocation() {
+			return this.inventory.getLocation();
+		}
+
+		/**
+		 * Gets the underlying inventory that was cloned.
+		 *
+		 * @return Returns the underlying inventory.
+		 */
+		public Inventory getInventory() {
+			return this.inventory;
+		}
+
 	}
 
 }

@@ -1,31 +1,30 @@
 package vg.civcraft.mc.civmodcore.locations.chunkmeta;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import vg.civcraft.mc.civmodcore.CivModCorePlugin;
-
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
+
+import vg.civcraft.mc.civmodcore.CivModCorePlugin;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.ChunkMetaViewTracker;
+import vg.civcraft.mc.civmodcore.locations.global.CMCWorldDAO;
+import vg.civcraft.mc.civmodcore.locations.global.WorldIDManager;
+
 public class GlobalChunkMetaManager {
+	private final CMCWorldDAO chunkDao;
+	private final Map<UUID, WorldChunkMetaManager> worldToManager;
 
-	private Map<UUID, Short> uuidToInternalID;
-	private Map<Short, UUID> internalIDToUuid;
-	private Map<UUID, WorldChunkMetaManager> worldToManager;
-	private ChunkDAO chunkDao;
-
-	public GlobalChunkMetaManager(ChunkDAO chunkDao) {
-		this.uuidToInternalID = new TreeMap<>();
-		this.worldToManager = new TreeMap<>();
-		this.internalIDToUuid = new TreeMap<>();
+	public GlobalChunkMetaManager(CMCWorldDAO chunkDao, WorldIDManager idManager) {
 		this.chunkDao = chunkDao;
+		this.worldToManager = new TreeMap<>();
 		for (World world : Bukkit.getWorlds()) {
-			registerWorld(world);
+			registerWorld(idManager.getInternalWorldId(world), world);
 		}
-		Bukkit.getPluginManager().registerEvents(new ChunkMetaListener(this), CivModCorePlugin.getInstance());
+		Bukkit.getPluginManager().registerEvents(new ChunkMetaListener(this, ChunkMetaViewTracker.getInstance()), CivModCorePlugin.getInstance());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(CivModCorePlugin.getInstance(), () -> {
 			for (World world : Bukkit.getWorlds()) {
 				for (Chunk chunk : world.getLoadedChunks()) {
@@ -48,9 +47,9 @@ public class GlobalChunkMetaManager {
 	 * @return ChunkMeta for the given parameter, guaranteed not null as long as the
 	 *         supplier lambda is valid
 	 */
-	public ChunkMeta<?> computeIfAbsent(int pluginID, World world, int chunkX, int chunkZ,
-			Supplier<ChunkMeta<?>> computer) {
-		return getWorldManager(world).computeIfAbsent(pluginID, chunkX, chunkZ, computer);
+	public ChunkMeta<?> computeIfAbsent(short pluginID, World world, int chunkX, int chunkZ,
+			Supplier<ChunkMeta<?>> computer, boolean alwaysLoaded) {
+		return getWorldManager(world).computeIfAbsent(pluginID, chunkX, chunkZ, computer, alwaysLoaded);
 	}
 
 	/**
@@ -61,8 +60,18 @@ public class GlobalChunkMetaManager {
 			man.flushAll();
 		}
 	}
+	
+	/**
+	 * Saves all data for one specific plugin out to the database
+	 * @param pluginID Internal id of the plugin to save data for
+	 */
+	public void flushPlugin(short pluginID) {
+		for (WorldChunkMetaManager man : worldToManager.values()) {
+			man.flushPluginData(pluginID);
+		}
+	}
 
-	public ChunkDAO getChunkDAO() {
+	public CMCWorldDAO getChunkDAO() {
 		return chunkDao;
 	}
 
@@ -76,8 +85,8 @@ public class GlobalChunkMetaManager {
 	 * @param chunkZ   Z-coord of the chunk
 	 * @return Retrieved ChunkMeta for the given parameter, possibly null
 	 */
-	public ChunkMeta<?> getChunkMeta(int pluginID, World world, int chunkX, int chunkZ) {
-		return getWorldManager(world).getChunkMeta(pluginID, chunkX, chunkZ);
+	public ChunkMeta<?> getChunkMeta(short pluginID, World world, int chunkX, int chunkZ, boolean alwaysLoaded) {
+		return getWorldManager(world).getChunkMeta(pluginID, chunkX, chunkZ, alwaysLoaded);
 	}
 
 	private WorldChunkMetaManager getWorldManager(World world) {
@@ -93,7 +102,7 @@ public class GlobalChunkMetaManager {
 	 * @param chunkX   X-coord of the chunk
 	 * @param chunkZ   Z-coord of the chunk
 	 */
-	public void insertChunkMeta(int pluginID, World world, int chunkX, int chunkZ, ChunkMeta<?> meta) {
+	public void insertChunkMeta(short pluginID, World world, int chunkX, int chunkZ, ChunkMeta<?> meta) {
 		meta.setPluginID(pluginID);
 		getWorldManager(world).insertChunkMeta(chunkX, chunkZ, meta);
 	}
@@ -106,57 +115,6 @@ public class GlobalChunkMetaManager {
 		worldManager.loadChunk(chunk.getX(), chunk.getZ());
 	}
 
-	/**
-	 * Registers a world for internal use
-	 * 
-	 * @param world World to prepare data structures for
-	 * @return Whether successfull or not
-	 */
-	boolean registerWorld(World world) {
-		if (uuidToInternalID.containsKey(world.getUID())) {
-			return true;
-		}
-		short id = chunkDao.getOrCreateWorldID(world);
-		if (id == -1) {
-			// very bad
-			return false;
-		}
-		uuidToInternalID.put(world.getUID(), id);
-		internalIDToUuid.put(id, world.getUID());
-		WorldChunkMetaManager manager = new WorldChunkMetaManager(world, id);
-		worldToManager.put(world.getUID(), manager);
-		return true;
-	}
-
-	/**
-	 * Registers all currently loaded worlds internally
-	 * 
-	 * @return Whether all worlds were successfully loaded in or not. Errors here
-	 *         would most likely mean a non-working database setup
-	 */
-	public boolean setup() {
-		for (World world : Bukkit.getWorlds()) {
-			boolean worked = registerWorld(world);
-			if (!worked) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Gets the world object mapped to an internal id
-	 * @param id ID to get world for
-	 * @return World if a matching one for the given id exists and the world is loaded currently
-	 */
-	public World getWorldByInternalID(short id) {
-		UUID uuid = internalIDToUuid.get(id);
-		if (uuid == null) {
-			return null;
-		}
-		return Bukkit.getWorld(uuid);
-	}
-
 	void unloadChunkData(Chunk chunk) {
 		WorldChunkMetaManager worldManager = worldToManager.get(chunk.getWorld().getUID());
 		if (worldManager == null) {
@@ -164,5 +122,9 @@ public class GlobalChunkMetaManager {
 		}
 		worldManager.unloadChunk(chunk.getX(), chunk.getZ());
 	}
-
+	
+	public void registerWorld(short id, World world) {
+		WorldChunkMetaManager manager = new WorldChunkMetaManager(world, id);
+		worldToManager.put(world.getUID(), manager);
+	}
 }

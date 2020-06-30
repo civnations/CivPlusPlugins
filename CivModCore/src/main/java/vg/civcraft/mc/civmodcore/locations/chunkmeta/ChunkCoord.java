@@ -1,16 +1,18 @@
 package vg.civcraft.mc.civmodcore.locations.chunkmeta;
 
-import org.bukkit.World;
-import vg.civcraft.mc.civmodcore.CivModCorePlugin;
-
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
-public class ChunkCoord implements Comparable<ChunkCoord> {
+import org.bukkit.World;
+
+import vg.civcraft.mc.civmodcore.CivModCorePlugin;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.ChunkMetaViewTracker;
+
+public class ChunkCoord extends XZWCoord {
 
 	/**
 	 * When was this chunk last loaded in Minecraft as UNIX timestamp
@@ -23,29 +25,16 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 	/**
 	 * Each ChunkMeta belongs to one plugin, they are identified by the plugin id
 	 */
-	private Map<Integer, ChunkMeta<?>> chunkMetas;
+	private Map<Short, ChunkMeta<?>> chunkMetas;
 	/**
 	 * Set to true once all data has been loaded for this chunk and stays true for
 	 * the entire life time of this object
 	 */
 	private boolean isFullyLoaded;
-
-	/**
-	 * Chunk x-coord
-	 */
-	private int x;
-	/**
-	 * Chunk z-coord
-	 */
-	private int z;
-
-	private short worldID;
 	private World world;
 
 	ChunkCoord(int x, int z, short worldID, World world) {
-		this.x = x;
-		this.z = z;
-		this.worldID = worldID;
+		super(x, z, worldID);
 		this.world = world;
 		this.chunkMetas = new TreeMap<>();
 		this.isFullyLoaded = false;
@@ -74,26 +63,52 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 	}
 
 	/**
-	 * Writes all data held by this instance to the datavase
+	 * Writes all data held by this instance to the database
 	 *
-	 * @pa boolean isFullyLoaded() { return isFullyLoaded; }ram worldID ID of the
-	 *     world this instance is in
 	 */
 	void fullyPersist() {
 		for (ChunkMeta<?> chunkMeta : chunkMetas.values()) {
-			switch (chunkMeta.getCacheState()) {
-			case NORMAL:
-				break;
-			case MODIFIED:
-				chunkMeta.update();
-				break;
-			case NEW:
-				chunkMeta.insert();
-				break;
-			case DELETED:
-				chunkMeta.delete();
+			persistChunkMeta(chunkMeta);
+		}
+	}
+	
+	/**
+	 * Writes all data held by this instance for one specific plugin to the database
+	 * @param id Internal id of the plugin to save data for
+	 */
+	void persistPlugin(short id) {
+		ChunkMeta<?> chunkMeta = chunkMetas.get(id);
+		if (chunkMeta != null) {
+			persistChunkMeta(chunkMeta);
+		}
+	}
+	
+	private static void persistChunkMeta(ChunkMeta<?> chunkMeta) {
+		switch (chunkMeta.getCacheState()) {
+		case NORMAL:
+			break;
+		case MODIFIED:
+			chunkMeta.update();
+			break;
+		case NEW:
+			chunkMeta.insert();
+			break;
+		case DELETED:
+			chunkMeta.delete();
+		}
+		chunkMeta.setCacheState(CacheState.NORMAL);
+	}
+
+	/**
+	 * Forget all data which is not supposed to be held in memory permanently
+	 */
+	void deleteNonPersistentData() {
+		Iterator<Entry<Short,ChunkMeta<?>>> iter = chunkMetas.entrySet().iterator();
+		while(iter.hasNext()) {
+			ChunkMeta<?> meta = iter.next().getValue();
+			if (!meta.loadAlways()) {
+				iter.remove();
 			}
-			chunkMeta.setCacheState(CacheState.NORMAL);
 		}
 	}
 
@@ -113,8 +128,8 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 		return lastUnloadingTime;
 	}
 
-	ChunkMeta<?> getMeta(int pluginID) {
-		if (!isFullyLoaded) {
+	ChunkMeta<?> getMeta(short pluginID, boolean alwaysLoaded) {
+		if (!alwaysLoaded && !isFullyLoaded) {
 			// check before taking monitor. This is fine, because the loaded flag will never
 			// switch from true to false,
 			// only the other way around
@@ -133,24 +148,13 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 		return chunkMetas.get(pluginID);
 	}
 
-	/**
-	 * @return Internal ID of the world this chunk is in
-	 */
-	public short getWorldID() {
-		return worldID;
-	}
-
-	public int getX() {
-		return x;
-	}
-
-	public int getZ() {
-		return z;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(x, z);
+	boolean hasPermanentlyLoadedData() {
+		for (ChunkMeta<?> meta : chunkMetas.values()) {
+			if (meta.loadAlways()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -162,19 +166,20 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 				return;
 			}
 
-			for (Entry<Integer, Supplier<ChunkMeta<?>>> generator : ChunkMetaFactory.getInstance()
+			for (Entry<Short, Supplier<ChunkMeta<?>>> generator : ChunkMetaFactory.getInstance()
 					.getEmptyChunkFunctions()) {
 				ChunkMeta<?> chunk = generator.getValue().get();
 				chunk.setChunkCoord(this);
-				chunk.setPluginID(generator.getKey());
+				short pluginID = generator.getKey();
+				chunk.setPluginID(pluginID);
 				try {
 					chunk.populate();
 				} catch (Exception e) {
 					// need to catch everything here, otherwise we block the main thread forever
 					// once it tries to read this
-					CivModCorePlugin.getInstance().getLogger().log(Level.SEVERE, 
-							"Failed to load chunk data", e);
+					CivModCorePlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk data", e);
 				}
+				ChunkMetaViewTracker.getInstance().get(pluginID).postLoad(chunk);
 				addChunkMeta(chunk);
 			}
 			isFullyLoaded = true;
@@ -198,16 +203,4 @@ public class ChunkCoord implements Comparable<ChunkCoord> {
 		this.lastUnloadingTime = System.currentTimeMillis();
 	}
 
-	@Override
-	public int compareTo(ChunkCoord o) {
-		int worldComp = Short.compare(this.worldID, o.getWorldID());
-		if (worldComp != 0) {
-			return worldComp;
-		}
-		int xComp = Integer.compare(this.x, o.getX());
-		if (xComp != 0) {
-			return worldComp;
-		}
-		return Integer.compare(this.z, o.getZ());
-	}
 }

@@ -2,9 +2,9 @@ package vg.civcraft.mc.civmodcore.scoreboard.bottom;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 import org.bukkit.Bukkit;
@@ -31,7 +31,11 @@ public class BottomLine implements Comparable<BottomLine>{
 	}
 	
 	public void updatePlayer(Player player, String text) {
-		texts.put(player.getUniqueId(), text);
+		updatePlayer(player.getUniqueId(), text);
+	}
+	
+	public void updatePlayer(UUID player, String text) {
+		texts.put(player, text);
 	}
 	
 	public String getCurrentText(UUID uuid) {
@@ -54,6 +58,7 @@ public class BottomLine implements Comparable<BottomLine>{
 						String newText = updateFunction.apply(player, entry.getValue());
 						if (newText == null) {
 							iter.remove();
+							BottomLineAPI.refreshIndividually(player.getUniqueId());
 							continue;
 						}
 						if (!newText.equals(entry.getValue()) ) {
@@ -68,8 +73,12 @@ public class BottomLine implements Comparable<BottomLine>{
 	}
 	
 	public void removePlayer(Player player) {
-		texts.remove(player.getUniqueId());
-		BottomLineAPI.refreshIndividually(player.getUniqueId());
+		removePlayer(player.getUniqueId());
+	}
+	
+	public void removePlayer(UUID uuid) {
+		texts.remove(uuid);
+		BottomLineAPI.refreshIndividually(uuid);
 	}
 	
 	Map<UUID, String> getAll() {

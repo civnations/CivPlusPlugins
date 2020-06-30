@@ -7,11 +7,15 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import vg.civcraft.mc.civmodcore.CivModCorePlugin;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.ChunkMeta;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.GlobalChunkMetaManager;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.XZWCoord;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.BlockBasedChunkMeta;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.BlockBasedStorageEngine;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.BlockDataObject;
-import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.StorageEngine;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.fallback.SingleBlockTracker;
+import vg.civcraft.mc.civmodcore.locations.global.WorldIDManager;
 
 /**
  * API view for block based chunk metas, which adds convenience methods for
@@ -20,14 +24,32 @@ import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.StorageEngine;
  * @param <T> BlockBasedChunkMeta subclass
  * @param <D> BlockDataObject subclass
  */
-public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D extends BlockDataObject<D>, S extends StorageEngine>
+public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D extends BlockDataObject<D>, S extends BlockBasedStorageEngine<D>>
 		extends ChunkMetaView<T> {
-	
-	private Supplier<T> chunkProducer;
 
-	BlockBasedChunkMetaView(JavaPlugin plugin, int pluginID, GlobalChunkMetaManager globalManager, Supplier<T> chunkProducer) {
-		super(plugin, pluginID, globalManager);
+	private Supplier<T> chunkProducer;
+	private S storageEngine;
+	private SingleBlockTracker<D> singleBlockTracker;
+	private boolean allowAccessUnloaded;
+	private WorldIDManager worldIdManager;
+
+	BlockBasedChunkMetaView(JavaPlugin plugin, short pluginID, GlobalChunkMetaManager globalManager,
+			Supplier<T> chunkProducer, S storage, boolean loadAll, boolean allowAccessUnloaded) {
+		super(plugin, pluginID, globalManager, loadAll);
 		this.chunkProducer = chunkProducer;
+		this.allowAccessUnloaded = allowAccessUnloaded;
+		this.storageEngine = storage;
+		if (loadAll) {
+			loadAll();
+		}
+		worldIdManager = CivModCorePlugin.getInstance().getWorldIdManager();
+		singleBlockTracker = new SingleBlockTracker<>();
+	}
+
+	private void loadAll() {
+		for (XZWCoord coord : storageEngine.getAllDataChunks()) {
+			getOrCreateChunkMeta(worldIdManager.getWorldByInternalID(pluginID), coord.getX(), coord.getZ());
+		}
 	}
 
 	/**
@@ -37,12 +59,7 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 	 * @return Data tied to the given block or null if no data exists there
 	 */
 	public D get(Block block) {
-		T chunk = super.getChunkMeta(block.getLocation());
-		if (chunk == null) {
-			return null;
-		}
-		validateY(block.getY());
-		return chunk.get(block);
+		return get(block.getLocation());
 	}
 
 	/**
@@ -52,17 +69,33 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 	 * @return Data at the given location or null if no data exists there
 	 */
 	public D get(Location location) {
-		T chunk = super.getChunkMeta(location);
-		if (chunk == null) {
-			return null;
-		}
 		validateY(location.getBlockY());
-		return chunk.get(location);
+		short worldID = worldIdManager.getInternalWorldId(location.getWorld());
+		D data = singleBlockTracker.getBlock(location, worldID);
+		if (data == null) {
+			T chunk = super.getChunkMeta(location);
+			if (chunk == null) {
+				if (alwaysLoaded) {
+					return null;
+				}
+				if (!allowAccessUnloaded) {
+					throw new IllegalStateException("Can not load data for unloaded chunk");
+				}
+				data = storageEngine.getForLocation(location.getBlockX(), location.getBlockY(), location.getBlockZ(),
+						worldID, pluginID);
+				if (data != null) {
+					singleBlockTracker.putBlock(data, worldID);
+				}
+			} else {
+				return chunk.get(location);
+			}
+		}
+		return data;
 	}
 
 	@SuppressWarnings("unchecked")
 	private T getOrCreateChunkMeta(World world, int x, int z) {
-		return super.computeIfAbsent(world, x, z, (Supplier<ChunkMeta<?>>)(Supplier<?>)chunkProducer);
+		return super.computeIfAbsent(world, x, z, (Supplier<ChunkMeta<?>>) (Supplier<?>) chunkProducer);
 	}
 
 	/**
@@ -76,8 +109,21 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 		}
 		Location loc = data.getLocation();
 		validateY(loc.getBlockY());
-		T chunk = getOrCreateChunkMeta(loc.getWorld(), loc.getChunk().getX(), loc.getChunk().getZ());
-		chunk.put(loc, data);
+		T chunk;
+		if (alwaysLoaded) {
+			chunk = getOrCreateChunkMeta(loc.getWorld(), loc.getChunk().getX(), loc.getChunk().getZ());
+		} else {
+			chunk = super.getChunkMeta(loc.getWorld(), loc.getChunk().getX(), loc.getChunk().getZ());
+		}
+		if (chunk != null) {
+			chunk.put(loc, data);
+			return;
+		}
+		if (!allowAccessUnloaded) {
+			throw new IllegalStateException("Can not insert data for unloaded chunk");
+		}
+		singleBlockTracker.putBlock(data, worldIdManager.getInternalWorldId(loc.getWorld()));
+
 	}
 
 	/**
@@ -87,12 +133,7 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 	 * @return Data removed, null if nothing was removed
 	 */
 	public D remove(Block block) {
-		T chunk = super.getChunkMeta(block.getLocation());
-		if (chunk == null) {
-			throw new IllegalArgumentException("No data loaded for the chunk at location " + block.getLocation());
-		}
-		validateY(block.getY());
-		return chunk.remove(block);
+		return remove(block.getLocation());
 	}
 
 	/**
@@ -101,12 +142,10 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 	 * @param data Data to remove
 	 */
 	public void remove(D data) {
-		T chunk = super.getChunkMeta(data.getLocation());
-		if (chunk == null) {
-			throw new IllegalArgumentException("No data loaded for the chunk at location " + data.getLocation());
+		D removed = remove(data.getLocation());
+		if (removed != data) {
+			throw new IllegalStateException("Removed data non-identical to the one supposed to be removed");
 		}
-		validateY(data.getLocation().getBlockY());
-		chunk.remove(data);
 	}
 
 	/**
@@ -116,21 +155,46 @@ public class BlockBasedChunkMetaView<T extends BlockBasedChunkMeta<D, S>, D exte
 	 * @return Data removed, null if nothing was removed
 	 */
 	public D remove(Location location) {
-		T chunk = super.getChunkMeta(location);
-		if (chunk == null) {
-			throw new IllegalArgumentException("No data loaded for the chunk at location " + location);
-		}
 		validateY(location.getBlockY());
-		return chunk.remove(location);
+		T chunk = super.getChunkMeta(location);
+		if (chunk != null) {
+			return chunk.remove(location);
+		}
+		if (alwaysLoaded) {
+			return null;
+		}
+		if (!allowAccessUnloaded) {
+			throw new IllegalStateException("Can not delete data for unloaded chunk");
+		}
+		return singleBlockTracker.removeBlock(location, worldIdManager.getInternalWorldId(location.getWorld()));
+
 	}
-	
-	private void validateY(int y) {
+
+	private static void validateY(int y) {
 		if (y < 0) {
 			throw new IllegalArgumentException("Y-level of data may not be less than 0");
 		}
 		if (y > 255) {
 			throw new IllegalArgumentException("Y-level of data may not be more than 255");
 		}
+	}
+
+	@Override
+	public void postLoad(ChunkMeta<?> c) {
+		@SuppressWarnings("unchecked")
+		T chunk = (T) c;
+		for (D data : singleBlockTracker.getAllForChunkAndRemove(chunk.getChunkCoord())) {
+			chunk.put(data.getLocation().getBlockX(), data.getLocation().getBlockY(), data.getLocation().getBlockZ(),
+					data, true);
+		}
+	}
+
+	@Override
+	public void disable() {
+		for (D data : singleBlockTracker.getAll()) {
+			storageEngine.persist(data, worldIdManager.getInternalWorldId(data.getLocation().getWorld()), pluginID);
+		}
+		super.disable();
 	}
 
 }

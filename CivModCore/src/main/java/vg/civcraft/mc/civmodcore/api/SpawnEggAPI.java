@@ -72,8 +72,6 @@ public final class SpawnEggAPI {
 			put(Material.ZOMBIE_VILLAGER_SPAWN_EGG, EntityType.ZOMBIE_VILLAGER).
 			build();
 
-	private SpawnEggAPI() { } // Make the class effectively static
-
 	/**
 	 * Tests if a material is that of a spawn egg.
 	 *
