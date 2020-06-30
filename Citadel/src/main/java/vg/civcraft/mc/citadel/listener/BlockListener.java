@@ -36,9 +36,9 @@ import vg.civcraft.mc.civmodcore.util.DoubleInteractFixer;
 public class BlockListener implements Listener {
 
 	private static final Material matfire = Material.FIRE;
-	
+
 	private DoubleInteractFixer interactFixer;
-	
+
 	public BlockListener(Citadel plugin) {
 		this.interactFixer = new DoubleInteractFixer(plugin);
 	}
@@ -128,8 +128,7 @@ public class BlockListener implements Listener {
 			if (interactFixer.checkInteracted(pie.getPlayer(), pie.getClickedBlock())) {
 				return;
 			}
-		}
-		else if (pie.getAction() != Action.LEFT_CLICK_BLOCK) {
+		} else if (pie.getAction() != Action.LEFT_CLICK_BLOCK) {
 			return;
 		}
 		Citadel.getInstance().getStateManager().getState(pie.getPlayer()).handleInteractBlock(pie);
@@ -177,23 +176,28 @@ public class BlockListener implements Listener {
 		if (!e.hasBlock()) {
 			return;
 		}
+		if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
 		Reinforcement rein = ReinforcementLogic.getReinforcementProtecting(e.getClickedBlock());
 		if (rein == null) {
 			return;
 		}
-		if (e.getClickedBlock().getBlockData() instanceof Container) {
+		if (e.getClickedBlock().getState() instanceof Container) {
 			if (!rein.hasPermission(e.getPlayer(), CitadelPermissionHandler.getChests())) {
 				e.setCancelled(true);
-				CitadelUtility.sendAndLog(e.getPlayer(), ChatColor.RED,
-						e.getClickedBlock().getType().name() + " is locked with " + rein.getType().getName());
+				String msg = String.format("%s is locked with %s%s", e.getClickedBlock().getType().name(),
+						ChatColor.AQUA, rein.getType().getName());
+				CitadelUtility.sendAndLog(e.getPlayer(), ChatColor.RED, msg);
 			}
 			return;
 		}
 		if (e.getClickedBlock().getBlockData() instanceof Openable) {
 			if (!rein.hasPermission(e.getPlayer(), CitadelPermissionHandler.getDoors())) {
 				e.setCancelled(true);
-				CitadelUtility.sendAndLog(e.getPlayer(), ChatColor.RED,
-						e.getClickedBlock().getType().name() + " is locked with " + rein.getType().getName());
+				String msg = String.format("%s is locked with %s%s", e.getClickedBlock().getType().name(),
+						ChatColor.AQUA, rein.getType().getName());
+				CitadelUtility.sendAndLog(e.getPlayer(), ChatColor.RED, msg);
 			}
 		}
 	}
@@ -227,10 +231,13 @@ public class BlockListener implements Listener {
 			rein.setHealth(-1);
 		}
 	}
-	
-	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void preventStrippingLogs(PlayerInteractEvent pie) {
 		if (!pie.hasBlock()) {
+			return;
+		}
+		if (pie.getAction() != Action.RIGHT_CLICK_BLOCK) {
 			return;
 		}
 		Block block = pie.getClickedBlock();
@@ -245,8 +252,7 @@ public class BlockListener implements Listener {
 		Player p = pie.getPlayer();
 		if (hand == EquipmentSlot.HAND) {
 			relevant = p.getInventory().getItemInMainHand();
-		}
-		else {
+		} else {
 			relevant = p.getInventory().getItemInOffHand();
 		}
 		if (!ToolAPI.isAxe(relevant.getType())) {
@@ -261,10 +267,13 @@ public class BlockListener implements Listener {
 			pie.setCancelled(true);
 		}
 	}
-	
-	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void preventTilingGrass(PlayerInteractEvent pie) {
 		if (!pie.hasBlock()) {
+			return;
+		}
+		if (pie.getAction() != Action.RIGHT_CLICK_BLOCK) {
 			return;
 		}
 		Block block = pie.getClickedBlock();
@@ -279,8 +288,7 @@ public class BlockListener implements Listener {
 		Player p = pie.getPlayer();
 		if (hand == EquipmentSlot.HAND) {
 			relevant = p.getInventory().getItemInMainHand();
-		}
-		else {
+		} else {
 			relevant = p.getInventory().getItemInOffHand();
 		}
 		if (!ToolAPI.isShovel(relevant.getType())) {
@@ -293,6 +301,67 @@ public class BlockListener implements Listener {
 		if (!rein.hasPermission(p, CitadelPermissionHandler.getModifyBlocks())) {
 			p.sendMessage(ChatColor.RED + "You do not have permission to modify this block");
 			pie.setCancelled(true);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+	public void preventTillingDirtIntoFarmland(PlayerInteractEvent pie) {
+		if (!pie.hasBlock()) {
+			return;
+		}
+		if (pie.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		Block block = pie.getClickedBlock();
+		Material type = block.getType();
+		if (type != Material.GRASS_BLOCK && type != Material.DIRT && type != Material.COARSE_DIRT
+				&& type != Material.GRASS_PATH) {
+			return;
+		}
+		EquipmentSlot hand = pie.getHand();
+		if (hand != EquipmentSlot.HAND && hand != EquipmentSlot.OFF_HAND) {
+			return;
+		}
+		ItemStack relevant;
+		Player p = pie.getPlayer();
+		if (hand == EquipmentSlot.HAND) {
+			relevant = p.getInventory().getItemInMainHand();
+		} else {
+			relevant = p.getInventory().getItemInOffHand();
+		}
+		if (!ToolAPI.isHoe(relevant.getType())) {
+			return;
+		}
+		Reinforcement rein = Citadel.getInstance().getReinforcementManager().getReinforcement(block);
+		if (rein == null) {
+			return;
+		}
+		if (!rein.hasPermission(p, CitadelPermissionHandler.getModifyBlocks())) {
+			p.sendMessage(ChatColor.RED + "You do not have permission to modify this block");
+			pie.setCancelled(true);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = false)
+	public void openBeacon(PlayerInteractEvent pie) {
+		if (!pie.hasBlock()) {
+			return;
+		}
+		if (pie.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		if (pie.getClickedBlock().getType() != Material.BEACON) {
+			return;
+		}
+		Reinforcement rein = ReinforcementLogic.getReinforcementProtecting(pie.getClickedBlock());
+		if (rein == null) {
+			return;
+		}
+		if (!rein.hasPermission(pie.getPlayer(), CitadelPermissionHandler.getBeacon())) {
+			pie.setCancelled(true);
+			String msg = String.format("%s is locked with %s%s", pie.getClickedBlock().getType().name(), ChatColor.AQUA,
+					rein.getType().getName());
+			CitadelUtility.sendAndLog(pie.getPlayer(), ChatColor.RED, msg);
 		}
 	}
 }

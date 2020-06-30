@@ -36,6 +36,8 @@ public class CitadelConfigManager extends CoreConfigManager {
 
 	private double redstoneRange;
 
+	private boolean hangersInheritReinforcements;
+
 	public CitadelConfigManager(ACivMod plugin) {
 		super(plugin);
 	}
@@ -54,6 +56,10 @@ public class CitadelConfigManager extends CoreConfigManager {
 
 	public double getMaxRedstoneDistance() {
 		return redstoneRange;
+	}
+
+	public boolean doHangersInheritReinforcements() {
+		return hangersInheritReinforcements;
 	}
 
 	private ReinforcementEffect getReinforcementEffect(ConfigurationSection config) {
@@ -126,18 +132,8 @@ public class CitadelConfigManager extends CoreConfigManager {
 		globalDecayMultiplier = config.getDouble("global_decay_multiplier", 2.0);
 		globalDecayTimer = ConfigParsing.parseTime(config.getString("global_decay_timer", "0"));
 		parseReinforcementTypes(config.getConfigurationSection("reinforcements"));
+		hangersInheritReinforcements = config.getBoolean("hangers_inherit_reinforcement", false);
 		return true;
-	}
-
-	private List<Material> parseMaterialList(ConfigurationSection config, String key) {
-		return parseList(config, key, s -> {
-			try {
-				return Material.valueOf(s.toUpperCase());
-			} catch (IllegalArgumentException e) {
-				logger.warning("Failed to parse " + s + " as material at " + config.getCurrentPath());
-				return null;
-			}
-		});
 	}
 
 	private ReinforcementType parseReinforcementType(ConfigurationSection config) {
@@ -164,6 +160,8 @@ public class CitadelConfigManager extends CoreConfigManager {
 		long decayTimer = ConfigParsing
 				.parseTime(config.getString("decay_timer", String.valueOf(globalDecayTimer / 1000L) + "s"));
 		double decayMultiplier = config.getDouble("decay_multiplier", globalDecayMultiplier);
+		double multiplerOnDeletedGroup = config.getDouble("deleted_group_multipler", 4);
+		int legacyId = config.getInt("legacy_id", -1);
 		if (name == null) {
 			logger.warning("No name specified for reinforcement type at " + config.getCurrentPath());
 			name = item.getType().name();
@@ -183,7 +181,7 @@ public class CitadelConfigManager extends CoreConfigManager {
 				+ gracePeriod + ", id: " + id);
 		return new ReinforcementType(health, returnChance, item, maturationTime, acidTime, maturationScale, gracePeriod,
 				creationEffect, damageEffect, destructionEffect, reinforceables, nonReinforceables, id, name,
-				globalBlackList, decayTimer, decayMultiplier);
+				globalBlackList, decayTimer, decayMultiplier, multiplerOnDeletedGroup, legacyId);
 	}
 
 	private void parseReinforcementTypes(ConfigurationSection config) {

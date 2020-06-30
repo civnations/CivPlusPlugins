@@ -26,12 +26,14 @@ public class ReinforcementType {
 	private String name;
 	private long decayTimer;
 	private double decayMultiplier;
+	private double deletedGroupMulitplier;
+	private int legacyId;
 
 	public ReinforcementType(float health, double returnChance, ItemStack item, long maturationTime, long acidTime,
 			double scale, long gracePeriod, ReinforcementEffect creationEffect, ReinforcementEffect damageEffect,
 			ReinforcementEffect destructionEffect, Collection<Material> allowsReinforceables,
 			Collection<Material> disallowedReinforceables, short id, String name, Collection<Material> globalBlackList,
-			long decayTimer, double decayMultiplier) {
+			long decayTimer, double decayMultiplier, double deletedGroupMulitplier, int legacyId) {
 		this.health = health;
 		this.name = name;
 		this.returnChance = returnChance;
@@ -43,6 +45,7 @@ public class ReinforcementType {
 		this.damageEffect = damageEffect;
 		this.destructionEffect = destructionEffect;
 		this.gracePeriod = gracePeriod;
+		this.deletedGroupMulitplier = deletedGroupMulitplier;
 		if (allowsReinforceables != null) {
 			this.allowedReinforceables = new TreeSet<>(allowsReinforceables);
 		} else {
@@ -58,6 +61,7 @@ public class ReinforcementType {
 		this.id = id;
 		this.decayMultiplier = decayMultiplier;
 		this.decayTimer = decayTimer;
+		this.legacyId = legacyId;
 	}
 
 	public boolean canBeReinforced(Material mat) {
@@ -98,6 +102,13 @@ public class ReinforcementType {
 	 */
 	public short getID() {
 		return id;
+	}
+	
+	/**
+	 * @return Damage multiplier applied if the owning group was deleted
+	 */
+	public double getDeletedGroupMultiplier() {
+		return deletedGroupMulitplier;
 	}
 
 	/**
@@ -160,6 +171,15 @@ public class ReinforcementType {
 	 */
 	public double getReturnChance() {
 		return returnChance;
+	}
+	
+	/**
+	 * Material id the material used for the reinforcement had pre-flattening (1.12.2 or earlier). Needed once for 
+	 * proper migration of reinforcements to higher versions
+	 * @return Old item id of the reinforcement item
+	 */
+	public int getLegacyId() {
+		return legacyId;
 	}
 	
 	public double getDecayDamageMultipler(long since) {

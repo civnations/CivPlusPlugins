@@ -1,20 +1,12 @@
 package vg.civcraft.mc.citadel.command;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockIterator;
-
 import vg.civcraft.mc.citadel.Citadel;
 import vg.civcraft.mc.citadel.CitadelPermissionHandler;
 import vg.civcraft.mc.citadel.CitadelUtility;
@@ -22,9 +14,16 @@ import vg.civcraft.mc.citadel.ReinforcementLogic;
 import vg.civcraft.mc.citadel.events.ReinforcementAcidBlockedEvent;
 import vg.civcraft.mc.citadel.model.AcidManager;
 import vg.civcraft.mc.citadel.model.Reinforcement;
+import vg.civcraft.mc.civmodcore.api.MaterialAPI;
 import vg.civcraft.mc.civmodcore.command.CivCommand;
 import vg.civcraft.mc.civmodcore.command.StandaloneCommand;
 import vg.civcraft.mc.civmodcore.util.TextUtil;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 @CivCommand(id = "ctacid")
 public class Acid extends StandaloneCommand {
@@ -36,6 +35,9 @@ public class Acid extends StandaloneCommand {
 		AcidManager acidMan = Citadel.getInstance().getAcidManager();
 		while (itr.hasNext()) {
 			Block block = itr.next();
+			if (MaterialAPI.isAir(block.getType()) || !(block.getType().isSolid())) {
+				continue;
+			}
 			if (!acidMan.isPossibleAcidBlock(block)) {
 				CitadelUtility.sendAndLog(p, ChatColor.RED, "That block is not a valid acid block");
 				return true;
@@ -57,7 +59,7 @@ public class Acid extends StandaloneCommand {
 				return true;
 			}
 			Block topFace = block.getRelative(BlockFace.UP);
-			if (Material.AIR.equals(topFace.getType())) {
+			if (MaterialAPI.isAir(topFace.getType())) {
 				CitadelUtility.sendAndLog(p, ChatColor.RED, "There is no block above to acid block.");
 				return true;
 			}
@@ -89,6 +91,7 @@ public class Acid extends StandaloneCommand {
 			// play particles for top block
 			ReinforcementLogic.damageReinforcement(topRein, topRein.getHealth() + 1, p);
 			block.breakNaturally();
+			p.getWorld().dropItemNaturally(reinforcement.getLocation(), reinforcement.getType().getItem());
 			topFace.breakNaturally();
 		}
 		return true;

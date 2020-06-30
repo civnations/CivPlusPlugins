@@ -7,13 +7,13 @@ import org.bukkit.event.HandlerList;
 
 import vg.civcraft.mc.citadel.listener.BlockListener;
 import vg.civcraft.mc.citadel.listener.EntityListener;
-import vg.civcraft.mc.citadel.listener.InformationModeListener;
+import vg.civcraft.mc.citadel.listener.ModeListener;
 import vg.civcraft.mc.citadel.listener.InventoryListener;
 import vg.civcraft.mc.citadel.listener.RedstoneListener;
 import vg.civcraft.mc.citadel.model.AcidManager;
 import vg.civcraft.mc.citadel.model.CitadelChunkData;
+import vg.civcraft.mc.citadel.model.CitadelDAO;
 import vg.civcraft.mc.citadel.model.CitadelSettingManager;
-import vg.civcraft.mc.citadel.model.CitadelStorage;
 import vg.civcraft.mc.citadel.model.HologramManager;
 import vg.civcraft.mc.citadel.model.Reinforcement;
 import vg.civcraft.mc.citadel.playerstate.PlayerStateManager;
@@ -39,6 +39,7 @@ public class Citadel extends ACivMod {
 	private ReinforcementTypeManager typeManager;
 	private HologramManager holoManager;
 	private CitadelSettingManager settingManager;
+	private CitadelDAO dao;
 
 	private PlayerStateManager stateManager;
 
@@ -72,6 +73,10 @@ public class Citadel extends ACivMod {
 	public HologramManager getHologramManager() {
 		return holoManager;
 	}
+	
+	CitadelDAO getDAO() {
+		return dao;
+	}
 
 	@Override
 	public void onDisable() {
@@ -103,14 +108,14 @@ public class Citadel extends ACivMod {
 		}
 		typeManager = new ReinforcementTypeManager();
 		config.getReinforcementTypes().forEach(t -> typeManager.register(t));
-		CitadelStorage storage = new CitadelStorage(this.logger, config.getDatabase());
-		if (!storage.updateDatabase()) {
+		dao = new CitadelDAO(this.logger, config.getDatabase());
+		if (!dao.updateDatabase()) {
 			logger.severe("Errors setting up database, shutting down");
 			Bukkit.shutdown();
 			return;
 		}
 		BlockBasedChunkMetaView<CitadelChunkData, TableBasedDataObject, TableStorageEngine<Reinforcement>> chunkMetaData = 
-				ChunkMetaAPI.registerBlockBasedPlugin(this, () -> {return new CitadelChunkData(false, storage);});
+				ChunkMetaAPI.registerBlockBasedPlugin(this, () -> new CitadelChunkData(false, dao),dao, true);
 		if (chunkMetaData == null) {
 			logger.severe("Errors setting up chunk metadata API, shutting down");
 			Bukkit.shutdown();
@@ -120,9 +125,14 @@ public class Citadel extends ACivMod {
 		stateManager = new PlayerStateManager();
 		acidManager = new AcidManager(config.getAcidMaterials());
 		settingManager = new CitadelSettingManager();
-		if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
-			holoManager = new HologramManager(settingManager);
-		}
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+			if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
+				holoManager = new HologramManager(settingManager);
+				logger.info("HolographicDisplays is loaded, holograms available");
+			}
+			else {
+				logger.info("HolographicDisplays is not loaded, no holograms available");
+			}});
 		CitadelPermissionHandler.setup();
 		registerListeners();
 	}
@@ -134,7 +144,7 @@ public class Citadel extends ACivMod {
 		getServer().getPluginManager().registerEvents(new BlockListener(this), this);
 		getServer().getPluginManager().registerEvents(new EntityListener(), this);
 		getServer().getPluginManager().registerEvents(new InventoryListener(), this);
-		getServer().getPluginManager().registerEvents(new InformationModeListener(this), this);
+		getServer().getPluginManager().registerEvents(new ModeListener(this), this);
 		getServer().getPluginManager().registerEvents(new RedstoneListener(config.getMaxRedstoneDistance()), this);
 	}
 }
