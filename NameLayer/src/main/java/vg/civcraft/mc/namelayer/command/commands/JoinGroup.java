@@ -1,18 +1,18 @@
 package vg.civcraft.mc.namelayer.command.commands;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import vg.civcraft.mc.namelayer.GroupManager.PlayerType;
 import vg.civcraft.mc.namelayer.NameAPI;
+import vg.civcraft.mc.namelayer.NameLayerPlugin;
 import vg.civcraft.mc.namelayer.command.PlayerCommandMiddle;
 import vg.civcraft.mc.namelayer.group.Group;
 import vg.civcraft.mc.namelayer.permission.GroupPermission;
 import vg.civcraft.mc.namelayer.permission.PermissionType;
+
+import java.util.List;
+import java.util.UUID;
 
 public class JoinGroup extends PlayerCommandMiddle{
 
@@ -55,10 +55,15 @@ public class JoinGroup extends PlayerCommandMiddle{
 			p.sendMessage(ChatColor.RED + "Someone derped. This group does not have the specified permission to let you join, sorry.");
 			return true;
 		}
-		if (g.isCurrentMember(uuid, pType)){
+		if (g.isCurrentMember(uuid)){
 			p.sendMessage(ChatColor.RED + "You are already a member.");
 			return true;
 		}
+		if(NameLayerPlugin.getBlackList().isBlacklisted(g, uuid)) {
+			p.sendMessage(ChatColor.RED + "You can not join a group you have been blacklisted from");
+			return true;
+		}
+
 		g.addMember(uuid, pType);
 		p.sendMessage(ChatColor.GREEN + "You have successfully been added to this group.");
 		return true;

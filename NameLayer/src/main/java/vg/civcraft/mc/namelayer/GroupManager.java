@@ -32,6 +32,8 @@ public class GroupManager{
 	private static Map<String, Group> groupsByName = new ConcurrentHashMap<>();
 	private static Map<Integer, Group> groupsById = new ConcurrentHashMap<>();
 	
+	private static boolean mergingInProgress = false;
+	
 	public GroupManager(){
 		groupManagerDao = NameLayerPlugin.getGroupManagerDao();
 		permhandle = new PermissionHandler();
@@ -221,13 +223,8 @@ public class GroupManager{
 	}
 
 	/**
-	 * Merging is initiated asynchronously on the shard the player currently inhabits. On initiation and post initial checks,
-	 * a Mercury message "merge|" is sent, indicating the beginning of the merging process. All shards receive this and
-	 * immediately discipline the groups involved to prevent desynchronization.
-	 * 
-	 * When the host shard is _done_, a second mercury message is sent, which signals the end of the process.
-	 * Due to the complexity of keeping the cache consistent, we're whiffing on this one a bit and
-	 * _for now_ simply invalidating the cache on servers.
+	 * Merging is initiated asynchronously on the shard the player currently inhabits. Due to the complexity of keeping
+	 * the cache consistent, we're whiffing on this one a bit and _for now_ simply invalidating the cache on servers.
 	 *
 	 * Eventually, we'll need to go line-by-line through the db code and just replicate in cache. That day is not today.
 	 *
@@ -274,6 +271,7 @@ public class GroupManager{
 					group.getName() + " and " + toMerge.getName());
 			return;
 		}
+		group.isValid();
 		group.setDisciplined(true, false);
 		toMerge.setDisciplined(true, false);
 		
@@ -310,7 +308,7 @@ public class GroupManager{
 	public static List<Group> getSubGroups(String name) {
 		if (name == null) {
 			NameLayerPlugin.getInstance().getLogger().log(Level.INFO, "Group getSubGroups event failed, caller passed in null", new Exception());
-			return new ArrayList<Group>();
+			return new ArrayList<>();
 		}
 
 		List<Group> groups = groupManagerDao.getSubGroups(name);

@@ -78,13 +78,13 @@ public class GUIGroupOverview {
 				if (autoAccept){
 					NameLayerPlugin.log(Level.INFO,
 							p.getName() + " turned autoaccept for invites off "
-									+ "via gui");
+									+ " via the gui");
 					p.sendMessage(ChatColor.GREEN + "You will no longer automatically accept group invites");
 				}
 				else {
 					NameLayerPlugin.log(Level.INFO,
 							p.getName() + " turned autoaccept for invites on "
-									+ "via gui");
+									+ " via the gui");
 					p.sendMessage(ChatColor.GREEN + "You will automatically accept group invites");
 				}
 				autoAccept = !autoAccept;
@@ -396,15 +396,21 @@ public class GUIGroupOverview {
 									Group gro = ensureFreshGroup(g);
 									GroupPermission groupPerm = gm.getPermissionforGroup(gro);
 									PlayerType pType = groupPerm.getFirstWithPerm(PermissionType.getPermission("JOIN_PASSWORD"));
-									if (pType == null){
+									if (pType == null) {
 										p.sendMessage(ChatColor.RED + "Someone derped. This group does not have the specified permission to let you join, sorry.");
 										showScreen();
 										return;
 									}
+									if (NameLayerPlugin.getBlackList().isBlacklisted(gro, p.getUniqueId())) {
+										p.sendMessage(ChatColor.RED + "You can not join a group you have been blacklisted from");
+										showScreen();
+										return;
+									}
+
 									NameLayerPlugin.log(Level.INFO,
 											p.getName() + " joined with password "
 													+ " to group " + g.getName()
-													+ "via gui");
+													+ " via the gui");
 									gro.addMember(p.getUniqueId(), pType);
 									p.sendMessage(ChatColor.GREEN + "You have successfully been added to "  + gro.getName());
 									showScreen();
