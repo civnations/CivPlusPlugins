@@ -4,9 +4,9 @@ import static vg.civcraft.mc.civmodcore.util.NullCoalescing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.server.v1_14_R1.NBTBase;
-import net.minecraft.server.v1_14_R1.NBTTagCompound;
-import net.minecraft.server.v1_14_R1.NBTTagList;
+import net.minecraft.server.v1_15_R1.NBTBase;
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
+import net.minecraft.server.v1_15_R1.NBTTagList;
 import org.apache.commons.lang.reflect.FieldUtils;
 import vg.civcraft.mc.civmodcore.util.Validation;
 

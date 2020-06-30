@@ -1171,24 +1171,27 @@ public final class MaterialAPI {
 	}
 
 	/**
-	 * Checks whether a material is a dirt like block.
-	 *
-	 * @param material The material to check.
-	 * @return Returns true if the material is dirty.
-	 */
+	* Checks whether a material is a dirt like block.
+	*
+	* @param material The material to check.
+	* @return Returns true if the material is dirty.
+	*/
 	public static boolean isDirt(Material material) {
-		if (material == null) {
-			return false;
-		}
-		if (Tag.DIRT_LIKE.getValues().contains(material)) {
+		// as of 1.15, there is no `dirt_like` tag, nor an alternative
+		/*if (Tag.DIRT_LIKE.getValues().contains(material)) {
 			return true;
-		}
+		}*/
 		switch (material) {
 			case FARMLAND:
 			case GRASS_PATH:
-				return true;
+	   		case PODZOL:
+			case DIRT:
+			case COARSE_DIRT:
+			case MYCELIUM:
+			case GRASS_BLOCK:
+				 return true;
 			default:
-				return false;
+				 return false;
 		}
 	}
 

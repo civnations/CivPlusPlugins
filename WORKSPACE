@@ -32,6 +32,7 @@ maven_install(
       "me.confuser:BarAPI:3.5",
       "com.connorlinfoot:ActionBarAPI:1.1",
       "org.inventivetalent:BossBarAPI:1.0.5",
+      "co.aikar:acf-bukkit:0.5.0-SNAPSHOT",
     ],
     repositories = [
       "https://jcenter.bintray.com/",
@@ -39,7 +40,7 @@ maven_install(
       # Devoted Build Server
       "https://build.devotedmc.com/plugin/repository/everything/",
       # Holographic Displays API (used by Citadel)
-      "https://ci.filoghost.me/plugin/repository/everything/",
+      "https://repo.codemc.io/repository/maven-public/",
       # DynMap (used by WorldBorder)
       "https://repo.mikeprimm.com/",
       # PaperLib (used by WorldBorder)
@@ -48,6 +49,8 @@ maven_install(
       "https://repo.dmulloy2.net/nexus/repository/public/",
       # CTPlus uses for BarAPI, BossBarAPI, ActionBarAPI
       "http://repo.byteflux.net/repository/maven-public/",
+      # CivModCore dependency acf-bukkit
+      "https://repo.aikar.co/content/groups/aikar/",
     ],
     fail_on_missing_checksum = False,
 )
