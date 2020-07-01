@@ -10,6 +10,7 @@ java_binary(
 	runtime_deps = [
 		"@maven//:com_zaxxer_HikariCP",
 		"@maven//:org_slf4j_slf4j_api",
+		"@maven//:co_aikar_acf_bukkit",
 	]
 )
 
