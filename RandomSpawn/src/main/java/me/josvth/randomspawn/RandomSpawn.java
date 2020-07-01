@@ -1,8 +1,5 @@
 package me.josvth.randomspawn;
 
-import isaac.bastion.Bastion;
-import isaac.bastion.manager.BastionBlockManager;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -34,7 +31,6 @@ public class RandomSpawn extends JavaPlugin {
 	SignListener signListener;
 	DamageListener damageListener;
 	private boolean isWorldBorderEnabled = false;
-	private boolean isBastionsEnabled = false;
 
 	private static List<Material> defaultBlackList = Arrays.asList(
 			new Material[] { Material.WATER, Material.LAVA, Material.FIRE, Material.CACTUS, Material.MAGMA_BLOCK });
@@ -57,8 +53,6 @@ public class RandomSpawn extends JavaPlugin {
 		damageListener = new DamageListener(this);
 
 		isWorldBorderEnabled = getServer().getPluginManager().isPluginEnabled("WorldBorder");
-		isBastionsEnabled = getServer().getPluginManager().isPluginEnabled("Bastion");
-
 	}
 
 	public void logInfo(String message) {
@@ -136,17 +130,8 @@ public class RandomSpawn extends JavaPlugin {
 				}
 			}
 		}
-		if (isBastionsEnabled) {
-			BastionBlockManager bm = Bastion.getBastionManager();
-			if (bm != null) {
-				if (bm.getBlockingBastion(ret) != null) {
-					return chooseSpawn(world);
-				}
-			}
-		}
 
 		return ret;
-
 	}
 
 	private Location chooseSpawn(double radius, double exclusionRadius, Location center, List<Material> blacklist) {
