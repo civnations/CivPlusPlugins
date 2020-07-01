@@ -1,6 +1,0 @@
-name: ${name}
-version: ${version}
-main: plus.civ.oworldgen.OwOrldGen
-api-version: 1.15
-authors: [Amelorate, SepiaTones]
-load: STARTUP
