@@ -41,7 +41,7 @@ public class Title {
 
 	/**
 	 * Sets the main big title
-	 *
+	 * 
 	 * @param title
 	 *            Title to set to
 	 */
@@ -58,7 +58,7 @@ public class Title {
 
 	/**
 	 * Sets the smaller sub title
-	 *
+	 * 
 	 * @param subtitle
 	 *            New subtitle text
 	 */
@@ -75,7 +75,7 @@ public class Title {
 
 	/**
 	 * Sets how long the title takes to fade in
-	 *
+	 * 
 	 * @param fadeIn
 	 *            Time in ticks to fade in
 	 */
@@ -92,7 +92,7 @@ public class Title {
 
 	/**
 	 * Sets how long the title stays fully visible
-	 *
+	 * 
 	 * @param stay
 	 *            Time the title stays, measured in ticks
 	 */
@@ -109,7 +109,7 @@ public class Title {
 
 	/**
 	 * Sets how long it takes for the title to fade out
-	 *
+	 * 
 	 * @param fadeOut
 	 *            Fade out time in ticks
 	 */
@@ -119,7 +119,7 @@ public class Title {
 
 	/**
 	 * Sends the title to the given player, according to the configuration in this instance
-	 *
+	 * 
 	 * @param p
 	 *            Player to send the title to
 	 */

@@ -12,3 +12,4 @@ public interface MaterialInterface {
 	Material getMaterial(MaterialInterface.Specific specific);
 	ItemStack getItemStack(MaterialInterface.Specific specific);
 }
+

@@ -1,12 +1,13 @@
 package vg.civcraft.mc.civmodcore.playersettings;
 
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import vg.civcraft.mc.civmodcore.chatDialog.Dialog;
-import vg.civcraft.mc.civmodcore.playersettings.gui.MenuSection;
-
 import java.util.Collections;
 import java.util.List;
+
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
+import vg.civcraft.mc.civmodcore.chatDialog.Dialog;
+import vg.civcraft.mc.civmodcore.playersettings.gui.MenuSection;
 
 public class MenuDialog extends Dialog {
 	
@@ -30,7 +31,7 @@ public class MenuDialog extends Dialog {
 			return;
 		}
 		setting.setValueFromString(player.getUniqueId(), result);
-		player.sendMessage(ChatColor.GREEN + "Set " + setting.getNiceName() + " to " + result);
+		player.sendMessage(ChatColor.GREEN + setting.getNiceName() + " set to: " + result);
 		menu.showScreen(player);
 	}
 

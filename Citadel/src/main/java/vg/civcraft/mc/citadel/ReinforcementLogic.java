@@ -5,10 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.material.Bed;
 
 import vg.civcraft.mc.citadel.events.ReinforcementCreationEvent;
 import vg.civcraft.mc.citadel.events.ReinforcementDestructionEvent;
@@ -18,8 +18,9 @@ import vg.civcraft.mc.civmodcore.api.BlockAPI;
 import vg.civcraft.mc.namelayer.group.Group;
 
 public final class ReinforcementLogic {
-	
-	private ReinforcementLogic() {}
+
+	private ReinforcementLogic() {
+	}
 
 	public static Reinforcement createReinforcement(Player player, Block block, ReinforcementType type, Group group) {
 		Reinforcement rein = new Reinforcement(block.getLocation(), type, group);
@@ -44,6 +45,7 @@ public final class ReinforcementLogic {
 				return;
 			}
 		}
+		futureHealth = Math.min(futureHealth, rein.getType().getHealth());
 		rein.setHealth(futureHealth);
 		if (rein.isBroken()) {
 			if (rein.getType().getDestructionEffect() != null) {
@@ -61,11 +63,16 @@ public final class ReinforcementLogic {
 		if (!reinforcement.isMature()) {
 			double timeExisted = System.currentTimeMillis() - reinforcement.getCreationTime();
 			double progress = timeExisted / reinforcement.getType().getMaturationTime();
-			damageAmount /= (1.0 - progress);
+			damageAmount /= progress;
 			damageAmount *= reinforcement.getType().getMaturationScale();
 		}
-		long lastRefresh = reinforcement.getGroup().getActivityTimeStamp();
-		damageAmount *= reinforcement.getType().getDecayDamageMultipler(lastRefresh);
+		if (reinforcement.getGroup() != null) {
+			long lastRefresh = reinforcement.getGroup().getActivityTimeStamp();
+			damageAmount *= reinforcement.getType().getDecayDamageMultipler(lastRefresh);
+		}
+		else {
+			damageAmount *= reinforcement.getType().getDeletedGroupMultiplier();
+		}
 		return damageAmount;
 	}
 
@@ -159,9 +166,11 @@ public final class ReinforcementLogic {
 		case LIGHT_BLUE_BED:
 		case RED_BED:
 		case YELLOW_BED:
-			Bed bed = (Bed) block.getBlockData();
-			if (bed.getPart() == Bed.Part.HEAD) {
-				return block.getRelative(((Bed) block.getState().getData()).getFacing().getOppositeFace());
+			if (block.getBlockData() instanceof Bed) {
+				Bed bed = (Bed) block.getBlockData();
+				if (bed.isHeadOfBed()) {
+					return block.getRelative(bed.getFacing().getOppositeFace());
+				}
 			}
 			return block;
 		default:
@@ -174,7 +183,7 @@ public final class ReinforcementLogic {
 	 * the player can not access due to missing perms
 	 * 
 	 * @param player the player attempting to access stuff
-	 * @param block Block to check for
+	 * @param block  Block to check for
 	 * @return True if the player can not do something like placing an adjacent
 	 *         chest or comparator, false otherwise
 	 */
@@ -201,15 +210,11 @@ public final class ReinforcementLogic {
 		if (rein != null || (mat != Material.CHEST && mat != Material.TRAPPED_CHEST)) {
 			return rein;
 		}
-		for (Block relative : BlockAPI.getPlanarSides(block)) {
-			if (relative.getType() != mat) {
-				continue;
-			}
-			rein = getReinforcementAt(relative.getLocation());
-			if (rein != null) {
-				return rein;
-			}
+
+		Block otherHalf = BlockAPI.getOtherDoubleChestBlock(block);
+		if (otherHalf == null) {
+			return null;
 		}
-		return null;
+		return getReinforcementAt(otherHalf.getLocation());
 	}
 }

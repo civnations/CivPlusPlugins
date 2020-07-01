@@ -22,6 +22,10 @@ public class CitadelPermissionHandler {
 	private static PermissionType infoPerm;
 	private static PermissionType repairPerm;
 	private static PermissionType modifyBlockPerm;
+	private static PermissionType beaconPerm;
+	private static PermissionType hangingPlaceBreak;
+	private static PermissionType itemFramePutTake;
+	private static PermissionType itemFrameRotate;
 
 	public static void setup() {
 		List<PlayerType> membersAndAbove = Arrays.asList(PlayerType.MEMBERS, PlayerType.MODS, PlayerType.ADMINS,
@@ -46,7 +50,15 @@ public class CitadelPermissionHandler {
 		insecurePerm = PermissionType.registerPermission("INSECURE_REINFORCEMENT", new ArrayList<>(membersAndAbove),
 				"Allows toggling the insecure flag on reinforcements");
 		modifyBlockPerm = PermissionType.registerPermission("MODIFY_BLOCK", new ArrayList<>(modAndAbove),
-				"Allows modifying reinforced blocks like flipping levers, strippling logs etc.");
+				"Allows modifying reinforced blocks like flipping levers, stripping logs etc.");
+		beaconPerm = PermissionType.registerPermission("BEACONS", new ArrayList<>(membersAndAbove),
+				"Allow changing beacon effects");
+		hangingPlaceBreak = PermissionType.registerPermission("HANGING_PLACE_BREAK", new ArrayList<>(membersAndAbove),
+				"Allows placing/breaking hanging entities on reinforced blocks.");
+		itemFramePutTake = PermissionType.registerPermission("ITEM_FRAME_PUT_TAKE", new ArrayList<>(membersAndAbove),
+				"Allows the placing/removal of items into/from Item Frames.");
+		itemFrameRotate = PermissionType.registerPermission("ITEM_FRAME_ROTATE", new ArrayList<>(membersAndAbove),
+				"Allows the rotation of items placed within Item Frames.");
 	}
 	
 	public static PermissionType getModifyBlocks() {
@@ -87,6 +99,22 @@ public class CitadelPermissionHandler {
 
 	public static PermissionType getRepair() {
 		return repairPerm;
+	}
+
+	public static PermissionType getBeacon() {
+		return beaconPerm;
+	}
+
+	public static PermissionType getHangingPlaceBreak() {
+		return hangingPlaceBreak;
+	}
+
+	public static PermissionType getItemFramePutTake() {
+		return itemFramePutTake;
+	}
+
+	public static PermissionType getItemFrameRotate() {
+		return itemFrameRotate;
 	}
 
 }

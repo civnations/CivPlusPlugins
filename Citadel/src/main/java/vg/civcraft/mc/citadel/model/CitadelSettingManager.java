@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import vg.civcraft.mc.citadel.Citadel;
 import vg.civcraft.mc.citadel.CitadelUtility;
-import vg.civcraft.mc.citadel.listener.InformationModeListener;
+import vg.civcraft.mc.citadel.listener.ModeListener;
 import vg.civcraft.mc.citadel.reinforcementtypes.ReinforcementType;
 import vg.civcraft.mc.civmodcore.playersettings.PlayerSettingAPI;
 import vg.civcraft.mc.civmodcore.playersettings.gui.MenuSection;
@@ -20,6 +20,8 @@ import vg.civcraft.mc.civmodcore.playersettings.impl.BooleanSetting;
 import vg.civcraft.mc.civmodcore.playersettings.impl.BoundedIntegerSetting;
 import vg.civcraft.mc.civmodcore.playersettings.impl.CommandReplySetting;
 import vg.civcraft.mc.civmodcore.playersettings.impl.DecimalFormatSetting;
+import vg.civcraft.mc.civmodcore.playersettings.impl.DisplayLocationSetting;
+import vg.civcraft.mc.civmodcore.playersettings.impl.DisplayLocationSetting.DisplayLocation;
 
 public class CitadelSettingManager {
 
@@ -28,6 +30,8 @@ public class CitadelSettingManager {
 	private BooleanSetting showChatMsgInCti;
 	private BooleanSetting showHologramInCti;
 	private BooleanSetting easyMode;
+	private BooleanSetting ctoDisableCti;
+	private BooleanSetting ctoDisableCtb;
 
 	private BoundedIntegerSetting hologramDuration;
 
@@ -37,11 +41,26 @@ public class CitadelSettingManager {
 	// private CommandReplySetting modeSwitch;
 	private DecimalFormatSetting ctiPercentageHealth;
 	private DecimalFormatSetting ctiReinforcementHealth;
+	private DisplayLocationSetting ctbLocationSetting;
+	private DisplayLocationSetting modeLocationSetting;
+	private DisplayLocationSetting ctiLocationSetting;
 
 	public CitadelSettingManager() {
 		initSettings();
 	}
 
+	public DisplayLocationSetting getBypassLocationSetting() {
+		return ctbLocationSetting;
+	}
+	
+	public DisplayLocationSetting getModeLocationSetting() {
+		return modeLocationSetting;
+	}
+	
+	public DisplayLocationSetting getInformationLocationSetting() {
+		return ctiLocationSetting;
+	}
+	
 	public BooleanSetting getBypass() {
 		return byPass;
 	}
@@ -49,7 +68,7 @@ public class CitadelSettingManager {
 	public BooleanSetting getInformationMode() {
 		return informationMode;
 	}
-	
+
 	public BooleanSetting getEasyMode() {
 		return easyMode;
 	}
@@ -57,15 +76,23 @@ public class CitadelSettingManager {
 	public boolean shouldShowChatInCti(UUID uuid) {
 		return showChatMsgInCti.getValue(uuid);
 	}
+	
+	public boolean shouldCtoDisableCti(UUID uuid) {
+		return ctoDisableCti.getValue(uuid);
+	}
+	
+	public boolean shouldCtoDisableCtb(UUID uuid) {
+		return ctoDisableCtb.getValue(uuid);
+	}
 
 	public boolean shouldShowHologramInCti(UUID uuid) {
 		return showHologramInCti.getValue(uuid);
 	}
-	
+
 	public boolean isInEasyMode(UUID uuid) {
 		return easyMode.getValue(uuid);
 	}
-	
+
 	public int getHologramDuration(UUID uuid) {
 		return hologramDuration.getValue(uuid);
 	}
@@ -98,7 +125,27 @@ public class CitadelSettingManager {
 				"How long should holograms in information mode remain visible, measured in milli seconds", false, 1000,
 				30000);
 		PlayerSettingAPI.registerSetting(hologramDuration, menu);
-
+		
+		ctbLocationSetting = new DisplayLocationSetting(Citadel.getInstance(), DisplayLocation.NONE, "Bypass display location"
+				, "citadelBypassDisplayLocation", new ItemStack(Material.GOLDEN_PICKAXE), "bypass");
+		PlayerSettingAPI.registerSetting(ctbLocationSetting, menu);
+		
+		ctiLocationSetting = new DisplayLocationSetting(Citadel.getInstance(), DisplayLocation.SIDEBAR, "Information mode display location"
+				, "citadelInfoModeDisplayLocation", new ItemStack(Material.BOOKSHELF), "reinforcement info mode");
+		PlayerSettingAPI.registerSetting(ctiLocationSetting, menu);
+		
+		modeLocationSetting = new DisplayLocationSetting(Citadel.getInstance(), DisplayLocation.SIDEBAR, "Citadel mode display location"
+				, "citadelReinModeDisplayLocation", new ItemStack(Material.NETHER_STAR), "Citadel mode");
+		PlayerSettingAPI.registerSetting(modeLocationSetting, menu);
+		
+		ctoDisableCtb =  new BooleanSetting(Citadel.getInstance(), false, "/cto disable /ctb",
+				"citadelCtoDisableCtb", "Should /cto disable Bypass mode (/ctb)");
+		PlayerSettingAPI.registerSetting(ctoDisableCtb, menu);
+		
+		ctoDisableCti =  new BooleanSetting(Citadel.getInstance(), true, "/cto disable /cti",
+				"citadelCtoDisableCti", "Should /cto disable Information mode (/cti)");
+		PlayerSettingAPI.registerSetting(ctoDisableCti, menu);		
+		
 		MenuSection commandSection = menu.createMenuSection("Command replies",
 				"Allows configuring the replies received when interacting with reinforcements or Citadel commands. For advanced users only");
 
@@ -127,7 +174,7 @@ public class CitadelSettingManager {
 		ctiEnemy.registerArgument("max_health", "50", "the maximum health of the reinforcement");
 		ctiEnemy.registerArgument("health", "25", "the current health of the reinforcement");
 		ctiEnemy.registerArgument("type", "Stone", "the type of the reinforcement");
-		ctiEnemy.registerArgument("health_color", InformationModeListener.getDamageColor(0.5).toString(),
+		ctiEnemy.registerArgument("health_color", ModeListener.getDamageColor(0.5).toString(),
 				"a color representing the reinforcement health");
 		PlayerSettingAPI.registerSetting(ctiEnemy, commandSection);
 	}
@@ -143,7 +190,7 @@ public class CitadelSettingManager {
 		args.put("max_health", reinHealthFormatter.format(type.getHealth()));
 		args.put("type", type.getName());
 		args.put("health_color",
-				InformationModeListener.getDamageColor(reinforcement.getHealth() / type.getHealth()).toString());
+				ModeListener.getDamageColor(reinforcement.getHealth() / type.getHealth()).toString());
 		CitadelUtility.sendAndLog(player, ChatColor.RESET, ctiEnemy.formatReply(player.getUniqueId(), args));
 	}
 }

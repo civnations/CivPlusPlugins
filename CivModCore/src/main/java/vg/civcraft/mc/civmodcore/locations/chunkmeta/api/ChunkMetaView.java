@@ -9,17 +9,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.ChunkMeta;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.GlobalChunkMetaManager;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.BlockBasedChunkMeta;
 
-public class ChunkMetaView<T extends ChunkMeta<?>> {
-
-	protected int pluginID;
-	protected JavaPlugin plugin;
+public class ChunkMetaView<T extends ChunkMeta<?>> extends APIView {
 	protected GlobalChunkMetaManager globalManager;
+	protected boolean alwaysLoaded;
 
-	ChunkMetaView(JavaPlugin plugin, int pluginID, GlobalChunkMetaManager globalManager) {
-		this.plugin = plugin;
-		this.pluginID = pluginID;
+	ChunkMetaView(JavaPlugin plugin, short pluginID, GlobalChunkMetaManager globalManager, boolean alwaysLoaded) {
+		super(plugin, pluginID);
 		this.globalManager = globalManager;
+		this.alwaysLoaded = alwaysLoaded;
 	}
 
 	/**
@@ -57,7 +56,7 @@ public class ChunkMetaView<T extends ChunkMeta<?>> {
 		if (!world.getChunkAt(chunkX, chunkZ).isLoaded()) {
 			throw new IllegalArgumentException("Can not insert meta for unloaded chunks");
 		}
-		return (T) globalManager.computeIfAbsent(pluginID, world, chunkX, chunkZ, computer);
+		return (T) globalManager.computeIfAbsent(pluginID, world, chunkX, chunkZ, computer, alwaysLoaded);
 	}
 
 	/**
@@ -65,15 +64,13 @@ public class ChunkMetaView<T extends ChunkMeta<?>> {
 	 * calls to this instance should be made during or after this call, create a new
 	 * instance instead if neccessary
 	 */
+	@Override
 	public void disable() {
 		if (globalManager == null) {
 			// already shut down
 			return;
 		}
-		GlobalChunkMetaManager globalTemp = globalManager;
-		globalManager = null;
-		globalTemp.flushAll();
-		ChunkMetaAPI.removePlugin(plugin);
+		globalManager.flushPlugin(this.pluginID);
 	}
 
 	/**
@@ -103,7 +100,7 @@ public class ChunkMetaView<T extends ChunkMeta<?>> {
 		if (location == null) {
 			throw new IllegalArgumentException("Location may not be null");
 		}
-		return getChunkMeta(location.getWorld(), location.getChunk().getX(), location.getChunk().getZ());
+		return getChunkMeta(location.getWorld(), BlockBasedChunkMeta.toChunkCoord(location.getBlockX()), BlockBasedChunkMeta.toChunkCoord(location.getBlockZ()));
 	}
 
 	/**
@@ -124,7 +121,7 @@ public class ChunkMetaView<T extends ChunkMeta<?>> {
 		if (globalManager == null) {
 			throw new IllegalStateException("View already shut down, can not read data");
 		}
-		return (T) globalManager.getChunkMeta(pluginID, world, chunkX, chunkZ);
+		return (T) globalManager.getChunkMeta(pluginID, world, chunkX, chunkZ, alwaysLoaded);
 	}
 
 	/**
@@ -164,6 +161,10 @@ public class ChunkMetaView<T extends ChunkMeta<?>> {
 			throw new IllegalArgumentException("Can not insert meta for unloaded chunks");
 		}
 		globalManager.insertChunkMeta(pluginID, world, chunkX, chunkZ, meta);
+	}
+
+	public void postLoad(ChunkMeta<?> chunk) {
+		//no implementation here, only in subclass
 	}
 
 }

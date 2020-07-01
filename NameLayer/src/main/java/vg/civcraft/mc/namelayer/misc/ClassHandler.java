@@ -1,4 +1,3 @@
-
 package vg.civcraft.mc.namelayer.misc;
 
 import org.bukkit.Server;
@@ -19,7 +18,8 @@ public class ClassHandler {
 		String packageName = server.getClass().getPackage().getName();
 		ch.version = packageName.substring(packageName.lastIndexOf('.') + 1);
 		try {
-			Class.forName("vg.civcraft.mc.namelayer.misc." + ch.version + ".ProfileModifier");
+			// TODO this entire system probably isn't needed now that we don't do version shading
+			Class.forName("vg.civcraft.mc.namelayer.misc.ProfileModifier");
 			vg.civcraft.mc.namelayer.gui.AbstractGroupGUI.matsInit();
 			return properlyEnabled = true;
 		} catch (Exception e) {
@@ -38,7 +38,7 @@ public class ClassHandler {
 
 	private Object getObject(Class<? extends Object> Class, String name) {
 		try {
-			Class<?> internalClass = Class.forName("vg.civcraft.mc.namelayer.misc." + ch.version + "." + name);
+			Class<?> internalClass = Class.forName("vg.civcraft.mc.namelayer.misc." + name);
 			if (internalClass.isAssignableFrom(internalClass))
 				return internalClass.getConstructor().newInstance();
 		} catch (Exception e) {

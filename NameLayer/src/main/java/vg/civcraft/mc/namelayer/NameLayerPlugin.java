@@ -52,7 +52,7 @@ public class NameLayerPlugin extends ACivMod{
 		createGroupOnFirstJoin = config.getBoolean("groups.creationOnFirstJoin", true);
 		instance = this;
 		loadDatabases();
-	    ClassHandler.Initialize(Bukkit.getServer());
+	  ClassHandler.Initialize(Bukkit.getServer());
 		new NameAPI(new GroupManager(), associations);
 		NameCleanser.load(config.getConfigurationSection("name_cleanser"));
 		registerListeners();
@@ -72,26 +72,22 @@ public class NameLayerPlugin extends ACivMod{
 		getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 	}
 	
+	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!loadGroups)
 			return false;
 		return handle.execute(sender, cmd, args);
 	}
 
+	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args){
 		if (!loadGroups)
 			return null;
 		return handle.complete(sender, cmd, args);
 	}
 
+	@Override
 	public void onDisable() {
-		if (db != null) {
-			try {
-				db.close();
-			} catch (Exception e) {
-				getLogger().log(Level.INFO, "Failed to close database gracefully on shutdown.", e);
-			}
-		}
 	}
 	
 	public static NameLayerPlugin getInstance(){

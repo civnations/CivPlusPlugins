@@ -3,9 +3,9 @@ package vg.civcraft.mc.civmodcore.scoreboard.side;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -48,6 +48,7 @@ public class CivScoreBoard {
 					if (player != null) {
 						String newText = updateFunction.apply(player, entry.getValue());
 						if (newText == null) {
+							hideForPlayer(player);
 							iter.remove();
 							continue;
 						}
@@ -63,12 +64,16 @@ public class CivScoreBoard {
 	}
 
 	public void set(Player p, String newText) {
+		if (newText == null) {
+			hide(p);
+			return;
+		}
 		String oldText = get(p);
 		internalUpdate(p, oldText, newText);
 		currentScoreText.put(p.getUniqueId(), newText);
 	}
 
-	private void internalUpdate(Player p, String oldText, String newText) {
+	private static void internalUpdate(Player p, String oldText, String newText) {
 		if (oldText != null) {
 			p.getScoreboard().resetScores(oldText);
 		} else {
@@ -83,12 +88,16 @@ public class CivScoreBoard {
 	}
 
 	public void hide(Player p) {
+		hideForPlayer(p);
+		currentScoreText.remove(p.getUniqueId());
+	}
+	
+	private void hideForPlayer(Player p) {
 		String text = get(p);
 		if (text == null) {
 			return;
 		}
 		p.getScoreboard().resetScores(text);
-		currentScoreText.remove(p.getUniqueId());
 		ScoreBoardAPI.adjustScore(p.getUniqueId(), -1);
 	}
 
@@ -107,7 +116,7 @@ public class CivScoreBoard {
 		currentScoreText.remove(p.getUniqueId());
 	}
 
-	private Objective getObjective(Player p) {
+	private static Objective getObjective(Player p) {
 		Scoreboard scb = p.getScoreboard();
 		Objective objective = scb.getObjective(TITLE);
 		if (objective == null) {

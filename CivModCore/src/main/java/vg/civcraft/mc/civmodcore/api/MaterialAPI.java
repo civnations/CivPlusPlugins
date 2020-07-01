@@ -1,5 +1,6 @@
 package vg.civcraft.mc.civmodcore.api;
 
+import com.google.common.base.Strings;
 import com.google.common.math.IntMath;
 import java.util.ArrayList;
 import java.util.List;
@@ -647,11 +648,11 @@ import org.bukkit.Tag;
  * {@link SpawnEggAPI SpawnEggAPI}
  * {@link ToolAPI ToolAPI}
  * {@link TreeTypeAPI TreeTypeAPI}
- * */
+ */
 public final class MaterialAPI {
 
 	private static final List<Material> hashMaterials = new ArrayList<>();
-
+	
 	static {
 		hashMaterials.addAll(Tag.WOOL.getValues());
 		hashMaterials.add(Material.BLACK_STAINED_GLASS);
@@ -704,7 +705,37 @@ public final class MaterialAPI {
 		hashMaterials.add(Material.ORANGE_CONCRETE);
 	}
 
-	private MaterialAPI() { }
+	/**
+	 * Checks whether a material would be considered a valid item.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material would be considered a valid item.
+	 */
+	public static boolean isValidItemMaterial(Material material) {
+		if (material == null) {
+			return false;
+		}
+		if (material == Material.AIR) {
+			return false;
+		}
+		if (!material.isItem()) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Attempts to retrieve a material by its slug.
+	 *
+	 * @param value The value to search for a matching material by.
+	 * @return Returns a matched material or null.
+	 */
+	public static Material getMaterial(String value) {
+		if (Strings.isNullOrEmpty(value)) {
+			return null;
+		}
+		return Material.getMaterial(value.toUpperCase());
+	}
 
 	/**
 	 * Checks whether a material is air.
@@ -712,19 +743,12 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is air.
-	 * */
+	 */
 	public static boolean isAir(Material material) {
 		if (material == null) {
 			return true;
 		}
-		switch (material) {
-			case AIR:
-			case CAVE_AIR:
-			case VOID_AIR:
-				return true;
-			default:
-				return false;
-		}
+		return material.isAir();
 	}
 
 	/**
@@ -732,8 +756,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a log.
-	 * */
+	 */
 	public static boolean isLog(Material material) {
+		if (material == null) {
+			return false;
+		}
 		if (isStrippedLog(material)) {
 			return true;
 		}
@@ -755,8 +782,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a wood plank.
-	 * */
+	 */
 	public static boolean isPlank(Material material) {
+		if (material == null) {
+			return false;
+		}
 		if (isStrippedPlank(material)) {
 			return true;
 		}
@@ -778,9 +808,18 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a stripped log or wood plank.
-	 * */
+	 */
 	public static boolean isStripped(Material material) {
-		return isStrippedLog(material) || isStrippedPlank(material);
+		if (material == null) {
+			return false;
+		}
+		if (isStrippedLog(material)) {
+			return true;
+		}
+		if (isStrippedPlank(material)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -788,8 +827,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a stripped log.
-	 * */
+	 */
 	public static boolean isStrippedLog(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case STRIPPED_ACACIA_LOG:
 			case STRIPPED_BIRCH_LOG:
@@ -808,8 +850,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a stripped plank.
-	 * */
+	 */
 	public static boolean isStrippedPlank(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case STRIPPED_ACACIA_WOOD:
 			case STRIPPED_BIRCH_WOOD:
@@ -828,8 +873,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material can be potted.
-	 * */
+	 */
 	public static boolean isPottable(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case ACACIA_SAPLING:
 			case ALLIUM:
@@ -870,8 +918,11 @@ public final class MaterialAPI {
 	 *
 	 * @see org.bukkit.block.data.Ageable Check if the Block's data is an instance of this Ageable, though be aware that
 	 * {@link Material#FIRE fire} and {@link Material#FROSTED_ICE frosted ice} also implement Ageable.
-	 * */
+	 */
 	public static boolean isCrop(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case BAMBOO:
 			case BEETROOTS:
@@ -899,8 +950,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a skull/head.
-	 * */
+	 */
 	public static boolean isSkull(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case CREEPER_HEAD:
 			case CREEPER_WALL_HEAD:
@@ -921,8 +975,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a glass block.
-	 * */
+	 */
 	public static boolean isGlassBlock(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case BLACK_STAINED_GLASS:
 			case BLUE_STAINED_GLASS:
@@ -952,8 +1009,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a glass pane.
-	 * */
+	 */
 	public static boolean isGlassPane(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case BLACK_STAINED_GLASS_PANE:
 			case BLUE_STAINED_GLASS_PANE:
@@ -985,8 +1045,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is immune to dragons.
-	 * */
+	 */
 	public static boolean isDragonImmune(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case BARRIER:
 			case BEDROCK:
@@ -1015,8 +1078,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is immune to withers.
-	 * */
+	 */
 	public static boolean isWitherImmune(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case BARRIER:
 			case BEDROCK:
@@ -1040,8 +1106,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is a wooden fence gate.
-	 * */
+	 */
 	public static boolean isWoodenFenceGate(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case ACACIA_FENCE_GATE:
 			case BIRCH_FENCE_GATE:
@@ -1060,8 +1129,11 @@ public final class MaterialAPI {
 	 *
 	 * @param material The material to check.
 	 * @return Returns true if the material is infested.
-	 * */
+	 */
 	public static boolean isInfested(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
 			case INFESTED_STONE:
 			case INFESTED_COBBLESTONE:
@@ -1074,26 +1146,24 @@ public final class MaterialAPI {
 				return false;
 		}
 	}
-
+	
 	/**
-	 * Checks whether a material is a dirt like block.
+	 * Checks whether a material is a wooden fence gate
 	 *
 	 * @param material The material to check.
-	 * @return Returns true if the material is dirty.
-	 * */
-	public static boolean isDirt(Material material) {
-    // as of 1.15, there is no `dirt_like` tag, nor an alternative
-    /*if (Tag.DIRT_LIKE.getValues().contains(material)) {
-			return true;
-		}*/
+	 * @return Returns true if the material is a wooden fence gate
+	 */
+	public static boolean isFenceGate(Material material) {
+		if (material == null) {
+			return false;
+		}
 		switch (material) {
-			case FARMLAND:
-			case GRASS_PATH:
-      case PODZOL:
-      case DIRT:
-      case COARSE_DIRT:
-      case MYCELIUM:
-      case GRASS_BLOCK:
+		case ACACIA_FENCE_GATE:
+		case BIRCH_FENCE_GATE:
+		case DARK_OAK_FENCE_GATE:
+		case JUNGLE_FENCE_GATE:
+		case OAK_FENCE_GATE:
+		case SPRUCE_FENCE_GATE:
 				return true;
 			default:
 				return false;
@@ -1101,7 +1171,252 @@ public final class MaterialAPI {
 	}
 
 	/**
-	 * Gets a random material based on the given objects hashcode
+	* Checks whether a material is a dirt like block.
+	*
+	* @param material The material to check.
+	* @return Returns true if the material is dirty.
+	*/
+	public static boolean isDirt(Material material) {
+		// as of 1.15, there is no `dirt_like` tag, nor an alternative
+		/*if (Tag.DIRT_LIKE.getValues().contains(material)) {
+			return true;
+		}*/
+		switch (material) {
+			case FARMLAND:
+			case GRASS_PATH:
+	   		case PODZOL:
+			case DIRT:
+			case COARSE_DIRT:
+			case MYCELIUM:
+			case GRASS_BLOCK:
+				 return true;
+			default:
+				 return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a potion of some sort.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a potion.
+	 */
+	public static boolean isPotion(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case POTION:
+			case SPLASH_POTION:
+			case LINGERING_POTION:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of sword.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a sword.
+	 */
+	public static boolean isSword(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case WOODEN_SWORD:
+			case STONE_SWORD:
+			case IRON_SWORD:
+			case GOLDEN_SWORD:
+			case DIAMOND_SWORD:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of pick axe.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a pick axe.
+	 */
+	public static boolean isPickaxe(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case WOODEN_PICKAXE:
+			case STONE_PICKAXE:
+			case IRON_PICKAXE:
+			case GOLDEN_PICKAXE:
+			case DIAMOND_PICKAXE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of axe.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a axe.
+	 */
+	public static boolean isAxe(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case WOODEN_AXE:
+			case STONE_AXE:
+			case IRON_AXE:
+			case GOLDEN_AXE:
+			case DIAMOND_AXE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of spade.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a spade.
+	 */
+	public static boolean isShovel(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case WOODEN_SHOVEL:
+			case STONE_SHOVEL:
+			case IRON_SHOVEL:
+			case GOLDEN_SHOVEL:
+			case DIAMOND_SHOVEL:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of hoe.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a hoe.
+	 */
+	public static boolean isHoe(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case WOODEN_HOE:
+			case STONE_HOE:
+			case IRON_HOE:
+			case GOLDEN_HOE:
+			case DIAMOND_HOE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of helmet.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a helmet.
+	 */
+	public static boolean isHelmet(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case LEATHER_HELMET:
+			case CHAINMAIL_HELMET:
+			case IRON_HELMET:
+			case GOLDEN_HELMET:
+			case DIAMOND_HELMET:
+			case TURTLE_HELMET:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of chest plate.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a chest plate.
+	 */
+	public static boolean isChestplate(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case LEATHER_CHESTPLATE:
+			case CHAINMAIL_CHESTPLATE:
+			case IRON_CHESTPLATE:
+			case GOLDEN_CHESTPLATE:
+			case DIAMOND_CHESTPLATE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of leggings.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a pair of leggings.
+	 */
+	public static boolean areLeggings(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case LEATHER_LEGGINGS:
+			case CHAINMAIL_LEGGINGS:
+			case IRON_LEGGINGS:
+			case GOLDEN_LEGGINGS:
+			case DIAMOND_LEGGINGS:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Checks whether a material is a type of boots.
+	 *
+	 * @param material The material to check.
+	 * @return Returns true if the material is a pair of boots.
+	 */
+	public static boolean areBoots(Material material) {
+		if (material == null) {
+			return false;
+		}
+		switch (material) {
+			case LEATHER_BOOTS:
+			case CHAINMAIL_BOOTS:
+			case IRON_BOOTS:
+			case GOLDEN_BOOTS:
+			case DIAMOND_BOOTS:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Gets a random material based on the given objects hashcode.
+	 *
 	 * @param object Object to base returned material on
 	 * @return Material hash of the given object
 	 */

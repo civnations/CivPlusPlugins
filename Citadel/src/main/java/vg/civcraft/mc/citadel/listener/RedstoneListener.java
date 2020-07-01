@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -96,7 +97,23 @@ public class RedstoneListener implements Listener {
 		}
 		Switch button = (Switch) (e.getClickedBlock().getBlockData());
 		Block buttonBlock = e.getClickedBlock();
-		Block attachedBlock = e.getClickedBlock().getRelative(button.getFacing().getOppositeFace());
+		Block attachedBlock;
+		// needs special handling because buttons attached to ceiling and ground can be
+		// turned in which case the facing direction indicates this direction
+		switch (button.getFace()) {
+		case CEILING:
+			attachedBlock = e.getClickedBlock().getRelative(BlockFace.UP);
+			break;
+		case FLOOR:
+			attachedBlock = e.getClickedBlock().getRelative(BlockFace.DOWN);
+			break;
+		case WALL:
+			attachedBlock = e.getClickedBlock().getRelative(button.getFacing().getOppositeFace());
+			break;
+		default:
+			Citadel.getInstance().getLogger().warning("Could not handle button face " + button.getFace());
+			return;
+		}
 		// prepare all sides of button itself
 		setupAdjacentDoors(e.getPlayer(), buttonBlock, button.getFacing().getOppositeFace());
 		// prepare all sides of the block attached to
@@ -119,7 +136,7 @@ public class RedstoneListener implements Listener {
 			return;
 		}
 		if (blockData instanceof Door) {
-			//we always store the activation for the lower half of a door
+			// we always store the activation for the lower half of a door
 			Door door = (Door) blockData;
 			if (door.getHalf() == Bisected.Half.TOP) {
 				block = block.getRelative(BlockFace.DOWN);
@@ -152,7 +169,11 @@ public class RedstoneListener implements Listener {
 	}
 
 	private void setupAdjacentDoors(Player player, Block block, BlockFace skip) {
-		for (Block rel : BlockAPI.getAllSides(block, f -> f != skip)) {
+		for (Entry<BlockFace, Block> entry : BlockAPI.getAllSidesMapped(block).entrySet()) {
+			if (entry.getKey() == skip) {
+				continue;
+			}
+			Block rel = entry.getValue();
 			BlockData blockData = rel.getBlockData();
 			if (!(blockData instanceof Openable)) {
 				continue;
@@ -163,8 +184,7 @@ public class RedstoneListener implements Listener {
 				if (door.getHalf() == Bisected.Half.TOP) {
 					// block is upper half of a door
 					locationToSave = rel.getRelative(BlockFace.DOWN).getLocation();
-				}
-				else {
+				} else {
 					// already the lower half of the door
 					locationToSave = rel.getLocation();
 				}
@@ -187,6 +207,8 @@ public class RedstoneListener implements Listener {
 			return;
 		}
 		setupAdjacentDoors(e.getPlayer(), e.getClickedBlock(), BlockFace.EAST_SOUTH_EAST);
+		// block below
+		setupAdjacentDoors(e.getPlayer(), e.getClickedBlock().getRelative(BlockFace.DOWN), BlockFace.UP);
 	}
 
 }

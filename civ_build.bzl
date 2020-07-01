@@ -29,7 +29,7 @@ plugin_yml_preprocessor = rule(
   },
 )
 
-def civ_plugin_jar(name, version, deps = []):  
+def civ_plugin_jar(name, version, deps = [], resource_jars = []):  
   plugin_yml_preprocessor(
     name = "plugin_yml",
     name_ = name,
@@ -41,6 +41,7 @@ def civ_plugin_jar(name, version, deps = []):
     name = name,
     srcs = native.glob(["src/main/java/**/*.java"]),
     deps = deps,
+    resource_jars = resource_jars,
     resources = native.glob(
       ["src/main/resources/**"],
       exclude = ["src/main/resources/template_plugin.yml"],
@@ -63,20 +64,29 @@ def civ_plugin_kt_jar(name, version, deps = []):
     input = "src/main/resources/template_plugin.yml",
   )
   
+  kt_name = name + "_kt"
   kt_jvm_library(
-    name = name,
+    name = kt_name,
     srcs = native.glob(["src/main/kotlin/**/*.kt"]),
     deps = deps,
+    visibility = ["//visibility:public"],
+  )
+  
+  native.java_library(
+    name = name,
+    srcs = native.glob(["src/main/java/**/*.java"]),
+    runtime_deps = ["@com_github_jetbrains_kotlin//:kotlin-stdlib"],
+    resource_jars = [":" + kt_name, "@com_github_jetbrains_kotlin//:kotlin-stdlib"],
     resources = native.glob(
       ["src/main/resources/**"],
       exclude = ["src/main/resources/template_plugin.yml"],
-    ),# + [":plugin_yml"],
+    ) + [":plugin_yml"],
     visibility = ["//visibility:public"]
   )
-  
+
   native.genrule(
      name = "rename_jar",
+     srcs = ["lib{}.jar".format(name)],
      outs = ["{}-{}.jar".format(name, version)],
-     srcs = ["{}.jar".format(name)],
      cmd = "cp $< $@",
-  )
+   )

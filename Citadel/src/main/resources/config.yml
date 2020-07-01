@@ -13,7 +13,6 @@ logCreation: true
 #Log message replies sent to users? Very useful
 logMessages: true
 
-
 #General debug messages
 debug: true
 
@@ -30,6 +29,7 @@ reinforcements:
     acid_time: 20m
     name: Stone
     hit_points: 50
+    id: 1
   iron:
     item:
       ==: org.bukkit.inventory.ItemStack
@@ -42,6 +42,7 @@ reinforcements:
     acid_time: 6h
     name: Iron
     hit_points: 300
+    id: 2
   diamond:
     item:
       ==: org.bukkit.inventory.ItemStack
@@ -54,6 +55,7 @@ reinforcements:
     acid_time: 48h
     name: Diamond
     hit_points: 2000
+    id: 3
   bedrock:
     item:
       ==: org.bukkit.inventory.ItemStack
@@ -66,36 +68,45 @@ reinforcements:
     acid_time: 1s
     name: Bedrock
     hit_points: 420420420
+    id: 4
     
 non_reinforceables:
  - BEDROCK
- - ENDER_PORTAL_FRAME
- - SAPLING
- - LONG_GRASS
+ - END_PORTAL_FRAME
+ - ACACIA_SAPLING
+ - BAMBOO_SAPLING
+ - BIRCH_SAPLING
+ - DARK_OAK_SAPLING
+ - JUNGLE_SAPLING
+ - OAK_SAPLING
+ - SPRUCE_SAPLING
+ - TALL_GRASS
  - DEAD_BUSH
- - PISTON_EXTENSION
- - PISTON_MOVING_PIECE
- - RED_ROSE
- - YELLOW_FLOWER
+ - MOVING_PISTON
+ - PISTON_HEAD
+ - POPPY
+ - DANDELION
  - BROWN_MUSHROOM
  - RED_MUSHROOM
  - TNT
- - CROPS
  - FIRE
  - SNOW
  - ICE
  - CACTUS
- - SUGAR_CANE_BLOCK
- - PORTAL
- - CAKE_BLOCK
+ - SUGAR_CANE
+ - NETHER_PORTAL
+ - END_PORTAL
+ - CAKE
  - PUMPKIN_STEM
  - MELON_STEM
  - VINE
- - NETHER_WARTS
- - ENDER_PORTAL
+ - NETHER_WART
  
 acidblock_material:
  - GOLD_BLOCK
+
+# Determines whether hanging entities (such as Item Frames) can be protected by their host block
+hangers_inherit_reinforcement: false
 
 # reinforcement_damageMultiplier is m where BlockDamage = 2 ^ (n/m) where n is equal to the number of days the group has been inactive
 reinforcement_damageMultiplier: 365

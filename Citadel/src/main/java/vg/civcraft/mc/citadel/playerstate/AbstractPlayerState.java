@@ -22,6 +22,7 @@ import vg.civcraft.mc.citadel.model.Reinforcement;
 import vg.civcraft.mc.citadel.reinforcementtypes.ReinforcementType;
 import vg.civcraft.mc.civmodcore.playersettings.PlayerSettingAPI;
 import vg.civcraft.mc.civmodcore.playersettings.impl.BooleanSetting;
+import vg.civcraft.mc.civmodcore.util.DelayedItemDrop;
 
 public abstract class AbstractPlayerState {
 
@@ -44,6 +45,14 @@ public abstract class AbstractPlayerState {
 			// no reinforcement, normal break which we dont care about
 			return;
 		}
+		if (CitadelUtility.isPlant(e.getBlock())) {
+			if (rein.hasPermission(e.getPlayer(), CitadelPermissionHandler.getCrops())
+					&& !e.getBlock().getLocation().equals(rein.getLocation())) {
+				// allow, because player has crop permission and the only reinforcement
+				// protecting is in the soil
+				return;
+			}
+		}
 		boolean hasAccess = rein.hasPermission(e.getPlayer(), CitadelPermissionHandler.getBypass());
 		BooleanSetting setting = (BooleanSetting) PlayerSettingAPI.getSetting("citadelBypass");
 		boolean hasByPass = setting.getValue(e.getPlayer());
@@ -60,14 +69,6 @@ public abstract class AbstractPlayerState {
 			rein.setHealth(-1);
 			return;
 		}
-		if (CitadelUtility.isPlant(e.getBlock())) {
-			if (rein.hasPermission(e.getPlayer(), CitadelPermissionHandler.getCrops())
-					&& !e.getBlock().getLocation().equals(rein.getLocation())) {
-				// allow, because player has crop permission and the only reinforcement
-				// protecting is in the soil
-				return;
-			}
-		}
 		if (hasAccess) {
 			CitadelUtility.sendAndLog(e.getPlayer(), ChatColor.GREEN,
 					"You could bypass this reinforcement " + "if you turn bypass mode on with '/ctb'");
@@ -82,9 +83,14 @@ public abstract class AbstractPlayerState {
 		damage = dre.getDamageDone();
 		ReinforcementLogic.damageReinforcement(rein, damage, e.getPlayer());
 		if (rein.getHealth() <= 0) {
-			e.setCancelled(false);
-			ReinforcedBlockBreak rbbe = new ReinforcedBlockBreak(e.getPlayer(), rein, e);
-			Bukkit.getPluginManager().callEvent(rbbe);
+			// in the case of double chests or similar there might now be another rein
+			// protecting this block
+			Reinforcement backupRein = ReinforcementLogic.getReinforcementProtecting(e.getBlock());
+			if (backupRein == null) {
+				e.setCancelled(false);
+				ReinforcedBlockBreak rbbe = new ReinforcedBlockBreak(e.getPlayer(), rein, e);
+				Bukkit.getPluginManager().callEvent(rbbe);
+			}
 		}
 	}
 
@@ -93,10 +99,12 @@ public abstract class AbstractPlayerState {
 	protected static void giveReinforcement(Location location, Player p, ReinforcementType type) {
 		HashMap<Integer, ItemStack> notAdded = p.getInventory().addItem(type.getItem().clone());
 		if (!notAdded.isEmpty()) {
-			CitadelUtility.dropItemAtLocation(location, type.getItem().clone());
+			DelayedItemDrop.dropAt(location, type.getItem().clone());
 		}
 	}
-	
+
+	public abstract String getOverlayText();
+
 	@Override
 	public abstract boolean equals(Object o);
 
