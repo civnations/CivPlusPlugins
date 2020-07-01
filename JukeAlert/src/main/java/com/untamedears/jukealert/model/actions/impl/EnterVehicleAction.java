@@ -3,11 +3,14 @@ package com.untamedears.jukealert.model.actions.impl;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import com.untamedears.jukealert.model.Snitch;
 import com.untamedears.jukealert.model.actions.abstr.LoggablePlayerVictimAction;
 
-import net.md_5.bungee.api.chat.TextComponent;
+import vg.civcraft.mc.civmodcore.api.ItemNames;
+import vg.civcraft.mc.civmodcore.inventorygui.DecorationStack;
 import vg.civcraft.mc.civmodcore.inventorygui.IClickable;
 
 public class EnterVehicleAction extends LoggablePlayerVictimAction {
@@ -20,19 +23,26 @@ public class EnterVehicleAction extends LoggablePlayerVictimAction {
 
 	@Override
 	public IClickable getGUIRepresentation() {
-		// TODO Auto-generated method stub
-		return null;
+		ItemStack is = new ItemStack(getVehicle());
+		super.enrichGUIItem(is);
+		return new DecorationStack(is);
 	}
 
-	@Override
-	public TextComponent getChatRepresentation(Location reference) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * @return Material of the entered vehicle
+	 */
+	public Material getVehicle() {
+		return Material.valueOf(victim);
 	}
 
 	@Override
 	public String getIdentifier() {
 		return ID;
+	}
+
+	@Override
+	protected String getChatRepresentationIdentifier() {
+		return "Entered " + ItemNames.getItemName(getVehicle());
 	}
 
 }

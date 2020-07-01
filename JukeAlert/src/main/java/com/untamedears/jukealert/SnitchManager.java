@@ -1,52 +1,65 @@
 package com.untamedears.jukealert;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
 import com.untamedears.jukealert.model.Snitch;
-import com.untamedears.jukealert.model.SnitchChunkData;
 import com.untamedears.jukealert.model.SnitchQTEntry;
 
 import vg.civcraft.mc.civmodcore.locations.SparseQuadTree;
-import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.BlockBasedChunkMetaView;
-import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.table.TableBasedDataObject;
-import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.table.TableStorageEngine;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.SingleBlockAPIView;
 
 public class SnitchManager {
 
-	private BlockBasedChunkMetaView<SnitchChunkData, TableBasedDataObject, TableStorageEngine<Snitch>> chunkData;
-	private SparseQuadTree<SnitchQTEntry> quadTree;
+	private SingleBlockAPIView<Snitch> api;
+	private Map<UUID, SparseQuadTree<SnitchQTEntry>> quadTreesByWorld;
 
-	public SnitchManager(
-			BlockBasedChunkMetaView<SnitchChunkData, TableBasedDataObject, TableStorageEngine<Snitch>> chunkData,
-			SparseQuadTree<SnitchQTEntry> quadTree) {
-		this.chunkData = chunkData;
-		this.quadTree = quadTree;
+	public SnitchManager(SingleBlockAPIView<Snitch> api) {
+		this.api = api;
+		this.quadTreesByWorld = new TreeMap<>();
+	}
+
+	public void shutDown() {
+		api.disable();
 	}
 
 	public Snitch getSnitchAt(Location location) {
-		return (Snitch) chunkData.get(location);
+		return api.get(location);
 	}
 
 	public Snitch getSnitchAt(Block block) {
-		return (Snitch) chunkData.get(block);
+		return api.get(block.getLocation());
 	}
 
 	public void addSnitch(Snitch snitch) {
-		chunkData.put(snitch);
+		api.put(snitch);
 		addSnitchToQuadTree(snitch);
 	}
 
 	public void addSnitchToQuadTree(Snitch snitch) {
+		SparseQuadTree<SnitchQTEntry> quadTree = getQuadTreeFor(snitch.getLocation());
 		for (SnitchQTEntry qt : snitch.getFieldManager().getQTEntries()) {
 			quadTree.add(qt);
 		}
 	}
-	 
-	
+
+	private SparseQuadTree<SnitchQTEntry> getQuadTreeFor(Location loc) {
+		SparseQuadTree<SnitchQTEntry> tree = quadTreesByWorld.get(loc.getWorld().getUID());
+		if (tree == null) {
+			JukeAlert.getInstance().getLogger().info("Quad tree for world  " + loc.getWorld().getUID() + " does not exist, creating");
+			tree = new SparseQuadTree<>(1);
+			quadTreesByWorld.put(loc.getWorld().getUID(), tree);
+		}
+		return tree;
+	}
+
 	/**
 	 * Removes the given snitch from the QtBox field tracking and the per chunk
 	 * block data tracking.
@@ -56,15 +69,29 @@ public class SnitchManager {
 	 * @param snitch Snitch to remove
 	 */
 	public void removeSnitch(Snitch snitch) {
-		chunkData.remove(snitch);
+		api.remove(snitch);
+		SparseQuadTree<SnitchQTEntry> quadTree = getQuadTreeFor(snitch.getLocation());
 		for (SnitchQTEntry qt : snitch.getFieldManager().getQTEntries()) {
 			quadTree.remove(qt);
 		}
 	}
 
 	public Set<Snitch> getSnitchesCovering(Location location) {
-		return quadTree.find(location.getBlockX(), location.getBlockZ(), true).stream().map(SnitchQTEntry::getSnitch)
-				.filter(s -> s.getFieldManager().isInside(location)).collect(Collectors.toSet());
+		Set <SnitchQTEntry> entries = getQuadTreeFor(location).find(location.getBlockX(), location.getBlockZ(), true);
+		Set<Snitch> result = new HashSet<>();
+		for(SnitchQTEntry qt : entries) {
+			if (qt.getSnitch().getFieldManager().isInside(location)) {
+				result.add(qt.getSnitch());
+			}
+		}
+		Iterator<Snitch> iter = result.iterator();
+		while (iter.hasNext()) {
+			Snitch s = iter.next();
+			if (!s.checkPhysicalIntegrity()) {
+				iter.remove();
+			}
+		}
+ 		return result;
 	}
 
 }

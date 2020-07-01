@@ -6,7 +6,6 @@ civ_plugin_jar(
     deps = [
       "//Spigot:Spigot",
       "//CivModCore:CivModCore",
-      "//Bastion:Bastion",
       "//WorldBorder:WorldBorder",
     ],
 )
