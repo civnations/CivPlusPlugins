@@ -18,6 +18,19 @@ import vg.civcraft.mc.citadel.model.HologramManager;
 import vg.civcraft.mc.citadel.model.Reinforcement;
 import vg.civcraft.mc.citadel.playerstate.PlayerStateManager;
 import vg.civcraft.mc.citadel.reinforcementtypes.ReinforcementTypeManager;
+import vg.civcraft.mc.citadel.command.Acid;
+import vg.civcraft.mc.citadel.command.AdvancedFortification;
+import vg.civcraft.mc.citadel.command.AreaReinforce;
+import vg.civcraft.mc.citadel.command.Bypass;
+import vg.civcraft.mc.citadel.command.EasyMode;
+import vg.civcraft.mc.citadel.command.Fortification;
+import vg.civcraft.mc.citadel.command.Information;
+import vg.civcraft.mc.citadel.command.Insecure;
+import vg.civcraft.mc.citadel.command.Off;
+import vg.civcraft.mc.citadel.command.PatchMode;
+import vg.civcraft.mc.citadel.command.Reinforce;
+import vg.civcraft.mc.citadel.command.ReinforcementsGUI;
+import vg.civcraft.mc.citadel.command.Reload;
 import vg.civcraft.mc.civmodcore.ACivMod;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.BlockBasedChunkMetaView;
 import vg.civcraft.mc.civmodcore.locations.chunkmeta.api.ChunkMetaAPI;
@@ -135,6 +148,21 @@ public class Citadel extends ACivMod {
 			}});
 		CitadelPermissionHandler.setup();
 		registerListeners();
+		
+		// I dunno why these weren't registering automatically, but they weren't and I don't wanna fix civmodcore
+		this.getStandaloneCommandHandler().registerCommand(new Acid());
+		this.getStandaloneCommandHandler().registerCommand(new AdvancedFortification());
+		this.getStandaloneCommandHandler().registerCommand(new AreaReinforce());
+		this.getStandaloneCommandHandler().registerCommand(new Bypass());
+		this.getStandaloneCommandHandler().registerCommand(new EasyMode());
+		this.getStandaloneCommandHandler().registerCommand(new Fortification());
+		this.getStandaloneCommandHandler().registerCommand(new Information());
+		this.getStandaloneCommandHandler().registerCommand(new Insecure());
+		this.getStandaloneCommandHandler().registerCommand(new Off());
+		this.getStandaloneCommandHandler().registerCommand(new PatchMode());
+		this.getStandaloneCommandHandler().registerCommand(new Reinforce());
+		this.getStandaloneCommandHandler().registerCommand(new ReinforcementsGUI());
+		this.getStandaloneCommandHandler().registerCommand(new Reload());
 	}
 
 	/**
