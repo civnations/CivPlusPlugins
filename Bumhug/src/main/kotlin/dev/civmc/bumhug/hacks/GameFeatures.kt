@@ -162,7 +162,7 @@ class GameFeatures: Hack(), Listener {
 			val passenger = event.exited;
 			if (passenger is Player) player = passenger else return
 
-			Bukkit.getScheduler().runTaskLater(Bumhug.instance!! as Plugin, { _ ->
+			Bukkit.getScheduler().runTaskLater(Bumhug.instance as Plugin, { _ ->
 				if (!tryToTeleportVertically(player, event.vehicle.location, "exiting vehicle")) {
 					player.health = 0.000000
 					Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
@@ -183,7 +183,7 @@ class GameFeatures: Hack(), Listener {
 			passangers.forEach {
 				run {
 					val player = it as Player
-					Bukkit.getScheduler().runTaskLater(Bumhug.instance!!, { _ ->
+					Bukkit.getScheduler().runTaskLater(Bumhug.instance, { _ ->
 						if (!tryToTeleportVertically(player, event.vehicle.location, "in destroyed vehicle")) {
 							it.health = 0.000000
 							Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
