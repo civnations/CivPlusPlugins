@@ -77,5 +77,17 @@ KOTLINC_RELEASE = {
     "sha256": KOTLINC_RELEASE_SHA,
 }
 kotlin_repositories(compiler_release = KOTLINC_RELEASE)
-
 kt_register_toolchains()
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+git_repository(
+    name = "com_github_johnynek_bazel_jar_jar",
+    commit = "20dbf71f09b1c1c2a8575a42005a968b38805519", # Latest commit SHA as at 2020/03/02
+    remote = "git://github.com/johnynek/bazel_jar_jar.git",
+    shallow_since = "1561392698 -1000",
+)
+load(
+    "@com_github_johnynek_bazel_jar_jar//:jar_jar.bzl",
+    "jar_jar_repositories",
+)
+jar_jar_repositories()
