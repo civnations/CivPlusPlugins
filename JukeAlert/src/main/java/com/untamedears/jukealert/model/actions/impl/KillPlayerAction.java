@@ -3,11 +3,14 @@ package com.untamedears.jukealert.model.actions.impl;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import com.untamedears.jukealert.model.Snitch;
 import com.untamedears.jukealert.model.actions.abstr.LoggablePlayerVictimAction;
 
-import net.md_5.bungee.api.chat.TextComponent;
+import vg.civcraft.mc.civmodcore.api.ItemAPI;
+import vg.civcraft.mc.civmodcore.inventorygui.DecorationStack;
 import vg.civcraft.mc.civmodcore.inventorygui.IClickable;
 import vg.civcraft.mc.namelayer.NameAPI;
 
@@ -29,14 +32,15 @@ public class KillPlayerAction extends LoggablePlayerVictimAction {
 
 	@Override
 	public IClickable getGUIRepresentation() {
-		// TODO Auto-generated method stub
-		return null;
+		ItemStack is = new ItemStack(Material.DIAMOND_SWORD);
+		ItemAPI.addGlow(is);
+		super.enrichGUIItem(is);
+		return new DecorationStack(is);
 	}
-
+	
 	@Override
-	public TextComponent getChatRepresentation(Location reference) {
-		// TODO Auto-generated method stub
-		return null;
+	protected String getChatRepresentationIdentifier() {
+		return "Killed " + getVictim();
 	}
 
 	@Override

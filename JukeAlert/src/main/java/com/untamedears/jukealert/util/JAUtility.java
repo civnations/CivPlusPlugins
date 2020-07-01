@@ -26,6 +26,8 @@ public final class JAUtility {
 	private JAUtility() {
 
 	}
+	
+	private static double tanPiDiv = Math.sqrt(2.0) - 1.0;
 
 	public static Snitch findClosestSnitch(Location loc, PermissionType perm, UUID player) {
 		Snitch closestSnitch = null;
@@ -72,6 +74,39 @@ public final class JAUtility {
 		return textComponent;
 	}
 
+	public static String genDirections(Snitch snitch, Player player) {
+		if (snitch.getLocation().getWorld().equals(player.getLocation().getWorld())) {
+			return String.format("%s[%sm %s%s%s]", ChatColor.GREEN, Math.round(player.getLocation().distance(snitch.getLocation())), ChatColor.RED, getCardinal(player.getLocation(), snitch.getLocation()), ChatColor.GREEN);
+		} else {
+			return ""; // Can't get directions to another world
+		}
+	}
+
+	public static String getCardinal(Location start, Location end) {
+		double dX = start.getBlockX() - end.getBlockX();
+		double dZ = start.getBlockZ() - end.getBlockZ();
+
+		if (Math.abs(dX) > Math.abs(dZ)) {
+			if (Math.abs(dZ / dX) <= tanPiDiv) {
+				return dX > 0 ? "West" : "East";
+			} else if (dX > 0) {
+				return dZ > 0 ? "North West" : "South West";
+			} else {
+				return dZ > 0 ? "North East" : "South East";
+			}
+		} else if (Math.abs(dZ) > 0) {
+			if (Math.abs(dX / dZ) <= tanPiDiv) {
+				return dZ > 0 ? "North" : "South";
+			} else if (dZ > 0) {
+				return dX > 0 ? "North West" : "North East";
+			} else {
+				return dX > 0 ? "South West" : "South East";
+			}
+		} else {
+			return "";
+		}
+	}
+
 	public static void addSnitchHoverText(TextComponent text, Snitch snitch) {
 		StringBuilder sb = new StringBuilder();
 		Location loc = snitch.getLocation();
@@ -80,7 +115,7 @@ public final class JAUtility {
 		if (!snitch.getName().isEmpty()) {
 			sb.append(String.format("%sName: %s%s%n", ChatColor.GOLD, ChatColor.AQUA, snitch.getName()));
 		}
-		sb.append(String.format("%sGroup: %s%s%n", ChatColor.GOLD, ChatColor.AQUA, snitch.getGroup().getName()));
+		sb.append(String.format("%sGroup: %s%s", ChatColor.GOLD, ChatColor.AQUA, snitch.getGroup().getName()));
 		text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(sb.toString()).create()));
 	}
 

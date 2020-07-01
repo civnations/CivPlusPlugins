@@ -6,27 +6,35 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import com.untamedears.jukealert.JukeAlert;
 import com.untamedears.jukealert.model.actions.abstr.SnitchAction;
+import com.untamedears.jukealert.model.actions.internal.DestroySnitchAction;
+import com.untamedears.jukealert.model.actions.internal.DestroySnitchAction.Cause;
 import com.untamedears.jukealert.model.appender.AbstractSnitchAppender;
 import com.untamedears.jukealert.model.field.FieldManager;
 
-import vg.civcraft.mc.civmodcore.locations.chunkmeta.block.table.TableBasedDataObject;
+import vg.civcraft.mc.citadel.ReinforcementLogic;
+import vg.civcraft.mc.citadel.model.Reinforcement;
+import vg.civcraft.mc.civmodcore.locations.chunkmeta.CacheState;
+import vg.civcraft.mc.civmodcore.locations.global.LocationTrackable;
 import vg.civcraft.mc.namelayer.GroupManager;
 import vg.civcraft.mc.namelayer.NameAPI;
 import vg.civcraft.mc.namelayer.group.Group;
 import vg.civcraft.mc.namelayer.permission.PermissionType;
 
-public class Snitch extends TableBasedDataObject {
+public class Snitch extends LocationTrackable {
 
 	private int snitchId;
 	private String name;
 	private int groupID;
 	private Map<Class<? extends AbstractSnitchAppender>, AbstractSnitchAppender> appenders;
 	private FieldManager fieldManager;
-	private SnitchFactory type;
+	private SnitchFactoryType type;
 	private boolean active;
 
 	/**
@@ -37,13 +45,13 @@ public class Snitch extends TableBasedDataObject {
 	 * @param isNew        Whether the snitch is new, should always be false when
 	 *                     calling from outside this class
 	 * @param groupID      ID of the group the snitch is reinforced on
-	 * @param fieldManager FieldManager to control the range of the snitch
+	 * @param fieldManagerFunc Function to generate a field manager instance
 	 * @param type         FieldManager to control the range of the snitch
 	 * @param name         Name of the snitch
 	 */
 	public Snitch(int snitchID, Location loc, boolean isNew, int groupID,
-			Function<Snitch, FieldManager> fieldManagerFunc, SnitchFactory type, String name) {
-		super(loc, isNew);
+			Function<Snitch, FieldManager> fieldManagerFunc, SnitchFactoryType type, String name) {
+		super(isNew, loc);
 		this.snitchId = snitchID;
 		this.groupID = groupID;
 		this.name = name;
@@ -51,6 +59,10 @@ public class Snitch extends TableBasedDataObject {
 		this.type = type;
 		this.appenders = new HashMap<>();
 		this.active = true;
+	}
+
+	public void onChunkLoad(Block block) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(JukeAlert.getInstance(), this::checkPhysicalIntegrity);
 	}
 
 	/**
@@ -85,7 +97,7 @@ public class Snitch extends TableBasedDataObject {
 	/**
 	 * @return Type/Config of this snitch
 	 */
-	public SnitchFactory getType() {
+	public SnitchFactoryType getType() {
 		return type;
 	}
 
@@ -106,7 +118,7 @@ public class Snitch extends TableBasedDataObject {
 	 * Checks if the player with the given UUID has the given permission for this
 	 * snitch
 	 * 
-	 * @param uuid       Player to check for
+	 * @param player       Player to check for
 	 * @param permission Permission to check for
 	 * @return True if the player has the permission and the snitch/group is valid,
 	 *         false otherwise
@@ -160,7 +172,7 @@ public class Snitch extends TableBasedDataObject {
 	 */
 	public void setName(String name) {
 		this.name = name;
-		setDirty();
+		setCacheState(CacheState.MODIFIED);
 	}
 
 	/**
@@ -169,6 +181,7 @@ public class Snitch extends TableBasedDataObject {
 	 * @param action Action to pass through
 	 */
 	public void processAction(SnitchAction action) {
+		action.accept(this);
 		for (AbstractSnitchAppender appender : appenders.values()) {
 			if (!active && !appender.runWhenSnitchInactive()) {
 				continue;
@@ -194,6 +207,38 @@ public class Snitch extends TableBasedDataObject {
 	public void persistAppenders() {
 		applyToAppenders(AbstractSnitchAppender::persist);
 	}
+	
+	/**
+	 * Checks whether both the block and the reinforcement of the snitch still exist and deletes it if not
+	 */
+	public boolean checkPhysicalIntegrity() {
+		Reinforcement rein = ReinforcementLogic.getReinforcementAt(getLocation());
+		if (rein == null) {
+			//no reinforcement at all
+			destroy(null, Cause.CLEANUP);
+			return false;
+		}
+		if (!rein.getGroup().getGroupIds().contains(this.groupID)) {
+			//different group
+			destroy(null, Cause.CLEANUP);
+			return false;
+		}
+		Block block = getLocation().getBlock();
+		if (block.getType() != this.type.getItem().getType()) {
+			//block is no longer a snitch
+			destroy(null, Cause.CLEANUP);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Deletes the snitch
+	 */
+	public void destroy(UUID player, DestroySnitchAction.Cause cause) {
+		JukeAlert.getInstance().getSnitchManager().removeSnitch(this);
+		processAction(new DestroySnitchAction(System.currentTimeMillis(), this, player, Cause.CULL));
+	}
 
 	/**
 	 * Applies the given consumer to all appenders of this snitch instance
@@ -202,5 +247,10 @@ public class Snitch extends TableBasedDataObject {
 	 */
 	public void applyToAppenders(Consumer<AbstractSnitchAppender> con) {
 		appenders.values().forEach(con);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("{Snitch at %s, group id %d, id %d, active %b}", getLocation(), groupID, snitchId, active);
 	}
 }

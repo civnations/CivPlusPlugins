@@ -3,11 +3,13 @@ package com.untamedears.jukealert.model.actions.impl;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import com.untamedears.jukealert.model.Snitch;
 import com.untamedears.jukealert.model.actions.abstr.LoggablePlayerVictimAction;
 
-import net.md_5.bungee.api.chat.TextComponent;
+import vg.civcraft.mc.civmodcore.inventorygui.DecorationStack;
 import vg.civcraft.mc.civmodcore.inventorygui.IClickable;
 
 public class DismountEntityAction extends LoggablePlayerVictimAction {
@@ -20,17 +22,19 @@ public class DismountEntityAction extends LoggablePlayerVictimAction {
 
 	@Override
 	public IClickable getGUIRepresentation() {
-		return null;
-	}
-
-	@Override
-	public TextComponent getChatRepresentation(Location reference) {
-		return null;
+		ItemStack is = new ItemStack(Material.SADDLE);
+		super.enrichGUIItem(is);
+		return new DecorationStack(is);
 	}
 
 	@Override
 	public String getIdentifier() {
-		return null;
+		return ID;
+	}
+
+	@Override
+	protected String getChatRepresentationIdentifier() {
+		return "Dismounted " + getVictim();
 	}
 
 }
