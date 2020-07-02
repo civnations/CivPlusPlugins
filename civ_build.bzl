@@ -1,20 +1,20 @@
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 def _plugin_yml_preprocessor_impl(ctx):
-    inp = ctx.attr.input.files.to_list()[0]
-    out = ctx.outputs.plugin_yml_file
-    ctx.actions.expand_template(
-      template = inp,
-      output = out,
-      #output = ctx.outputs.plugin_yml_file,
-      substitutions = {
-        "${name}": ctx.attr.name_,
-      },
-    )
-    print(ctx.outputs.plugin_yml_file)
-    return struct(
-      files = depset([ctx.outputs.plugin_yml_file])
-    )
+  inp = ctx.attr.input.files.to_list()[0]
+  out = ctx.outputs.plugin_yml_file
+  ctx.actions.expand_template(
+    template = inp,
+    output = out,
+    #output = ctx.outputs.plugin_yml_file,
+    substitutions = {
+      "${name}": ctx.attr.name_,
+    },
+  )
+  print(ctx.outputs.plugin_yml_file)
+  return struct(
+    files = depset([ctx.outputs.plugin_yml_file])
+  )
 
 plugin_yml_preprocessor = rule(
   implementation = _plugin_yml_preprocessor_impl,
