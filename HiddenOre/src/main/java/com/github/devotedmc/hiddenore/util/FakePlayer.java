@@ -55,6 +55,7 @@ import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
@@ -102,10 +103,18 @@ public class FakePlayer implements Player {
 			@Override
 			public void setMaxStackSize(int size) {
 			}
-
+			
 			@Override
-			public ItemStack getItem(int index) {
+			public ItemStack getItem(EquipmentSlot e) {
 				return null;
+			}
+			
+			@Override
+			public void setItem(EquipmentSlot e, ItemStack is) {
+			}
+			
+			@Override
+			public void setItem(int index, ItemStack is) {
 			}
 
 			@Override
@@ -206,6 +215,11 @@ public class FakePlayer implements Player {
 			public List<HumanEntity> getViewers() {
 				return null;
 			}
+			
+			@Override
+			public ItemStack getItem(int index) {
+				return null;
+			}
 
 			@Override
 			public InventoryType getType() {
@@ -255,10 +269,6 @@ public class FakePlayer implements Player {
 			@Override
 			public ItemStack getBoots() {
 				return null;
-			}
-
-			@Override
-			public void setItem(int index, ItemStack item) {
 			}
 
 			@Override
@@ -397,6 +407,11 @@ public class FakePlayer implements Player {
 
 	@Override
 	public void setItemOnCursor(ItemStack item) {
+	}
+	
+	@Override
+	public float getAttackCooldown() {
+		return 0.0f;
 	}
 
 	@Override
@@ -659,6 +674,18 @@ public class FakePlayer implements Player {
 	@Override
 	public void setVelocity(Vector velocity) {
 
+	}
+	
+	@Override
+	public void attack(Entity e) {
+	}
+	
+	@Override
+	public void swingOffHand() {
+	}
+	
+	@Override
+	public void swingMainHand() {
 	}
 
 	@Override
