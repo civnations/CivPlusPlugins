@@ -1,6 +1,6 @@
 name: ${name}
 main: com.untamedears.jukealert.JukeAlert
-version: ${version}
+version: 1.0.0
 author: mgrandi, Maxopoly
 depend:
 - Citadel

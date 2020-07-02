@@ -9,7 +9,6 @@ def _plugin_yml_preprocessor_impl(ctx):
       #output = ctx.outputs.plugin_yml_file,
       substitutions = {
         "${name}": ctx.attr.name_,
-        "${version}": ctx.attr.version,
       },
     )
     print(ctx.outputs.plugin_yml_file)
@@ -21,7 +20,6 @@ plugin_yml_preprocessor = rule(
   implementation = _plugin_yml_preprocessor_impl,
   attrs = {
     "name_": attr.string(mandatory = True),
-    "version": attr.string(mandatory = True),
     "input": attr.label(mandatory = True, allow_single_file = True),
   },
   outputs = {
@@ -29,11 +27,10 @@ plugin_yml_preprocessor = rule(
   },
 )
 
-def civ_plugin_jar(name, version, deps = [], resource_jars = []):  
+def civ_plugin_jar(name, deps = [], resource_jars = []):  
   plugin_yml_preprocessor(
     name = "plugin_yml",
     name_ = name,
-    version = version,
     input = "src/main/resources/template_plugin.yml",
   )
 
@@ -52,15 +49,14 @@ def civ_plugin_jar(name, version, deps = [], resource_jars = []):
   native.genrule(
      name = "rename_jar",
      srcs = ["lib{}.jar".format(name)],
-     outs = ["{}-{}.jar".format(name, version)],
+     outs = ["{}.jar".format(name)],
      cmd = "cp $< $@",
   )
 
-def civ_plugin_kt_jar(name, version, deps = []):
+def civ_plugin_kt_jar(name, deps = []):
   plugin_yml_preprocessor(
     name = "plugin_yml",
     name_ = name,
-    version = version,
     input = "src/main/resources/template_plugin.yml",
   )
   
@@ -87,6 +83,6 @@ def civ_plugin_kt_jar(name, version, deps = []):
   native.genrule(
      name = "rename_jar",
      srcs = ["lib{}.jar".format(name)],
-     outs = ["{}-{}.jar".format(name, version)],
+     outs = ["{}.jar".format(name)],
      cmd = "cp $< $@",
    )

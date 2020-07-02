@@ -1,7 +1,7 @@
 name: ${name}
 main: com.github.maxopoly.finale.Finale
 author: Maxopoly
-version: ${version}
+version: 1.0.0
 depend: [CivModCore, ProtocolLib]
 softdepend: [CombatTagPlus]
 commands:

@@ -1,7 +1,7 @@
 name: ${name}
 main: com.fndragon.arthropodegg.ArthropodEgg
 author: fndragon
-version: ${version}
+version: 1.0.0
 commands:
    arthropodegg:
       description: This is used to interact with the arthropodegg plugin

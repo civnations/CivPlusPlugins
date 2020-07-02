@@ -1,6 +1,6 @@
 name: ${name}
 main: vg.civcraft.mc.namelayer.NameLayerPlugin
-version: ${version}
+version: 1.0.0
 author: Rourke750
 authors: [BlackXnt, Maxopoly, ProgrammerDan, Tyrothalos, Scuwr, Mr_Little_Kitty]
 depend: [CivModCore]
