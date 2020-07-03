@@ -1,7 +1,7 @@
 name: ${name}
 author: Brettflan
 description: Efficient, feature-rich plugin for limiting the size of your worlds.
-version: ${version}
+version: 1.0.0
 api-version: 1.13
 main: com.wimbli.WorldBorder.WorldBorder
 softdepend:

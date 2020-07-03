@@ -1,6 +1,6 @@
 name: ${name}
 main: org.kitteh.vanish.VanishPlugin
-version: ${version}
+version: 1.0.0
 website: http://kitteh.org
 depend: [ProtocolLib]
 author: mbaxter

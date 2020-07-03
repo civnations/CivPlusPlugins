@@ -2,7 +2,6 @@ load("//:civ_build.bzl", "civ_plugin_jar")
 
 civ_plugin_jar(
     name = "WorldBorder",
-    version = "1.10.0",
     deps = [
       "//Spigot:Spigot",
       "@maven//:us_dynmap_dynmap_api",

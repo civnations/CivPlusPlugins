@@ -1,6 +1,6 @@
 name: ${name}
 main: vg.civcraft.mc.civchat2.CivChat2
-version: ${version}
+version: 1.0.0
 authors:
 - jjj5311
 - Maxopoly

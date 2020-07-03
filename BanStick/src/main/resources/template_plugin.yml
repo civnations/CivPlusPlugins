@@ -1,5 +1,5 @@
 name: ${name}
-version: ${version}
+version: 1.0.0
 author: [ProgrammerDan]
 depend: [CivModCore]
 softdepend: [IP-Check, NameLayer]

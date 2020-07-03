@@ -2,7 +2,7 @@ name: ${name}
 main: com.programmerdan.minecraft.wordbank.WordBank
 author: ProgrammerDan
 authors: []
-version: ${version}
+version: 1.0.0
 commands:
   wordbank:
     description: |

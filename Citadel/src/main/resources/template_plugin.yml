@@ -1,6 +1,6 @@
 name: ${name}
 main: vg.civcraft.mc.citadel.Citadel
-version: ${version}
+version: 1.0.0
 authors:
 - Rourke750
 - Maxopoly
