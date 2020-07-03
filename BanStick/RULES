@@ -1,0 +1,1 @@
+rule inet.ipaddr.** inet.ipaddr.@1
