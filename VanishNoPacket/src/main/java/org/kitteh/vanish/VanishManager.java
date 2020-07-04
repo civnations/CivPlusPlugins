@@ -71,15 +71,15 @@ public final class VanishManager {
         this.announceManipulator = new VanishAnnounceManipulator(this.plugin);
         this.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this.plugin, this.showPlayer, 4, 4);
 
-        this.plugin.getServer().getMessenger().registerIncomingPluginChannel(this.plugin, "VanishNoPacket:vanishStatus", new PluginMessageListener() {
+        this.plugin.getServer().getMessenger().registerIncomingPluginChannel(this.plugin, "vanishnopacket:status", new PluginMessageListener() {
             @Override
             public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-                if (channel.equals("VanishNoPacket:vanishStatus") && new String(message).equals("check")) {
-                    player.sendPluginMessage(plugin, "VanishNoPacket:vanishStatus", VanishManager.this.isVanished(player) ? new byte[]{0x01} : new byte[]{0x00});
+                if (channel.equals("vanishnopacket:status") && new String(message).equals("check")) {
+                    player.sendPluginMessage(plugin, "vanishnopacket:status", VanishManager.this.isVanished(player) ? new byte[]{0x01} : new byte[]{0x00});
                 }
             }
         });
-        this.plugin.getServer().getMessenger().registerOutgoingPluginChannel(this.plugin, "VanishNoPacket:vanishStatus");
+        this.plugin.getServer().getMessenger().registerOutgoingPluginChannel(this.plugin, "vanishnopacket:status");
 
     }
 
