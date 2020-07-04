@@ -1,1 +1,2 @@
 rule inet.ipaddr.** inet.ipaddr.@1
+rule org.jsoup.** org.jsoup.@1

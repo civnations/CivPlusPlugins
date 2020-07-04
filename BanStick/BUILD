@@ -8,6 +8,7 @@ java_binary(
 	main_class = "none",
 	runtime_deps = [
 		"@maven//:com_github_seancfoley_ipaddress",
+		"@maven//:org_jsoup_jsoup",
 	]
 )
 
