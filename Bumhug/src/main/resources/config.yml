@@ -47,6 +47,10 @@ newfriendAssist:
     bed:
       material: BED
       amount: 1
+oldEnchanting:
+  enabled: true
+  hideEnchantmentTooltips: true
+  enchantCostMultiplier: 1.0
 deathMessages:
   enabled: true
   sendPlayerCoordsOnDeath: true

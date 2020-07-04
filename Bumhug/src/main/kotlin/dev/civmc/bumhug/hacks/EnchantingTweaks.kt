@@ -12,7 +12,7 @@ class EnchantingTweaks: Hack(), Listener {
 	override val configName = "oldEnchanting"
 	override val prettyName = "Old Enchanting"
 
-	private val hideEnchantTooltops = config.getBoolean("hideEnchantmentTooltops")
+	private val hideEnchantTooltips = config.getBoolean("hideEnchantmentTooltips")
 	private val enchantCostMultiplier = config.getDouble("enchantCostMultiplier")
 
 	init {
