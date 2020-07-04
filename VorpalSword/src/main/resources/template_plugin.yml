@@ -1,0 +1,25 @@
+name: ${name}
+version: ${version}
+main: plus.civ.vorpalsword.VorpalSword
+author: Amelorate
+depend: [RandomSpawn, CivModCore, CombatTagPlus, NameLayer]
+softdepend: []
+
+permissions:
+  vorpalsword.free.any:
+    description: Allows freeing any player without access to their sword.
+    default: op
+  vorpalsword.forceimprison:
+    description: Allows imprisioning any player using commands.
+    default: op
+  vorpalsword.locate.any:
+    description: Allows locating any player.
+    default: op
+  vorpalsword.spawnsword:
+    description: Allows spawning in a prisonsword with a command.
+    default: op
+
+commands:
+  vp:
+    description: The core VorpalSword command.
+    usage: /vp help
