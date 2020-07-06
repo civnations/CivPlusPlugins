@@ -3,6 +3,7 @@ main: org.kitteh.vanish.VanishPlugin
 version: 1.0.0
 website: http://kitteh.org
 depend: [ProtocolLib]
+api-version: 1.15
 author: mbaxter
 description: Vanish for the distinguished admin
 dev-url: http://dev.bukkit.org/server-mods/vanish/

@@ -3,6 +3,7 @@ version: 1.0.0
 main: dev.civmc.bumhug.Bumhug
 author: Soer
 softdepend: [CombatTagPlus, Citadel]
+api-version: 1.15
 
 permissions:
   bumhug.*:

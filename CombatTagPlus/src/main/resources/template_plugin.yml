@@ -4,6 +4,7 @@ version: 1.0.0
 authors: [Byteflux, Sudzzy]
 main: net.minelink.ctplus.CombatTagPlus
 softdepend: [BarAPI, PlayerHeads, BossBarAPI, ActionBarAPI, mcMMO]
+api-version: 1.15
 commands:
   combattagplus:
     aliases: [ctplus, ct, combattag]

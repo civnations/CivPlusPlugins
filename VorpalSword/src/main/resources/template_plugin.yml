@@ -4,6 +4,7 @@ main: plus.civ.vorpalsword.VorpalSword
 author: Amelorate
 depend: [RandomSpawn, CivModCore, CombatTagPlus, NameLayer]
 softdepend: []
+api-version: 1.15
 
 permissions:
   vorpalsword.free.any:

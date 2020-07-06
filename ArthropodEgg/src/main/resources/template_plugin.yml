@@ -2,6 +2,7 @@ name: ${name}
 main: com.fndragon.arthropodegg.ArthropodEgg
 author: fndragon
 version: 1.0.0
+api-version: 1.15
 commands:
    arthropodegg:
       description: This is used to interact with the arthropodegg plugin
