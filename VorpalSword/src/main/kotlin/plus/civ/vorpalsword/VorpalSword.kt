@@ -38,6 +38,8 @@ class VorpalSword: ACivMod() {
 		registerListener(PrisonOnKill())
 
 		getCommand("vp")!!.setExecutor(VPCommand())
+		
+		this.saveDefaultConfig()
 	}
 
 	//override fun getPluginName(): String {
