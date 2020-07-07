@@ -49,7 +49,7 @@ class DatabaseManager {
               freed_offline bool,
               
               PRIMARY KEY (id),
-              FOREIGN KEY (sword_id) REFRENCES swords(id)
+              FOREIGN KEY (sword_id) REFERENCES swords(id)
 			  ON DELETE CASCADE
             )
         """.trimIndent()
