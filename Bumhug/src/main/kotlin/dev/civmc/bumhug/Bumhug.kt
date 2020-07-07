@@ -23,6 +23,7 @@ class Bumhug: JavaPlugin() {
 	
 	override fun onEnable() {
 		instanceStorage = this
+		this.saveDefaultConfig()
 		loadHacks()
 	}
 	

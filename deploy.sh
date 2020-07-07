@@ -10,7 +10,7 @@ for d in */; do
   for f in *; do
     # if filename looks like [DIRNAME].jar
     if [ $f = "${d%?}.jar" ]; then
-      export OLD=$(find $DEST_PATH -regextype grep -maxdepth 1 -name "${d%?}-*.jar")
+      export OLD=$(find $DEST_PATH -maxdepth 1 -name "${d%?}-*.jar")
       if ! [ -z "$OLD" ]; then
         rm "$OLD"
       fi

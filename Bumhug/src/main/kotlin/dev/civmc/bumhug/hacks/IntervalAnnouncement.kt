@@ -47,10 +47,8 @@ class IntervalAnnouncement: Hack() {
 
     init {
         // parse all the announcements from the config
-        for (section in config.getConfigurationSection("announcements")!!.getValues(false)) {
-            val key = section.key;
-
-            val configSection = config.getConfigurationSection(key)!!
+        for (key in config.getConfigurationSection("announcements")!!.getKeys(false)) {
+            val configSection = config.getConfigurationSection("announcements." + key)!!
 
             val message = ChatColor.translateAlternateColorCodes('&', configSection.getString("message")!!)
             val permission = configSection.getString("permission", "bumhug.intervalannouncement.everyone")!!

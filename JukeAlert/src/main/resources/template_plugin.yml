@@ -2,6 +2,7 @@ name: ${name}
 main: com.untamedears.jukealert.JukeAlert
 version: 1.0.0
 author: mgrandi, Maxopoly
+api-version: 1.15
 depend:
 - Citadel
 - NameLayer

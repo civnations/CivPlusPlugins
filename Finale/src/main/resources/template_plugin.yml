@@ -4,6 +4,7 @@ author: Maxopoly
 version: 1.0.0
 depend: [CivModCore, ProtocolLib]
 softdepend: [CombatTagPlus]
+api-version: 1.15
 commands:
     finalereload:
         permission: finale.op

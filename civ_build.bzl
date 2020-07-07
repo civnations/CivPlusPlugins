@@ -71,8 +71,8 @@ def civ_plugin_kt_jar(name, deps = []):
   native.java_library(
     name = name,
     srcs = native.glob(["src/main/java/**/*.java"]),
-    runtime_deps = ["@com_github_jetbrains_kotlin//:kotlin-stdlib"],
-    resource_jars = [":" + kt_name, "@com_github_jetbrains_kotlin//:kotlin-stdlib"],
+    runtime_deps = ["@com_github_jetbrains_kotlin//:kotlin-stdlib", "@com_github_jetbrains_kotlin//:kotlin-reflect"],
+    resource_jars = [":" + kt_name, "@com_github_jetbrains_kotlin//:kotlin-stdlib", "@com_github_jetbrains_kotlin//:kotlin-reflect"],
     resources = native.glob(
       ["src/main/resources/**"],
       exclude = ["src/main/resources/template_plugin.yml"],

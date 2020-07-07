@@ -29,6 +29,8 @@ class VorpalSword: ACivMod() {
 	override fun onEnable() {
 		super.onEnable()
 		instanceStorage = this
+
+		this.saveDefaultConfig()
 		configManagerStorage = ConfigManager(config)
 		databaseManagerStorage = DatabaseManager()
 
