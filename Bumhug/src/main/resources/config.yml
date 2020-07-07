@@ -45,7 +45,7 @@ newfriendAssist:
       - A gift from the admins as you begin your journey on Civ
       amount: 64
     bed:
-      material: BED
+      material: RED_BED
       amount: 1
 oldEnchanting:
   enabled: true
