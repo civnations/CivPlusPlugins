@@ -29,6 +29,7 @@ class VorpalSword: ACivMod() {
 	override fun onEnable() {
 		super.onEnable()
 		instanceStorage = this
+		this.saveDefaultConfig()
 		configManagerStorage = ConfigManager(config)
 		databaseManagerStorage = DatabaseManager()
 
@@ -38,8 +39,6 @@ class VorpalSword: ACivMod() {
 		registerListener(PrisonOnKill())
 
 		getCommand("vp")!!.setExecutor(VPCommand())
-		
-		this.saveDefaultConfig()
 	}
 
 	//override fun getPluginName(): String {
