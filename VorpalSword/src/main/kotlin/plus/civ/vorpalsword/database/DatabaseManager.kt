@@ -50,7 +50,7 @@ class DatabaseManager {
               
               PRIMARY KEY (id),
               FOREIGN KEY (sword_id) REFERENCES swords(id)
-			  ON DELETE CASCADE
+			         ON DELETE CASCADE
             )
         """.trimIndent()
 
