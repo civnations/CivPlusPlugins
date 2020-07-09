@@ -80,14 +80,8 @@ public final class CombatTagPlus extends JavaPlugin {
         // Initialize plugin state
         hookManager = new HookManager(this);
         tagManager = new TagManager(this);
-        // Helper class was found
-        try {
-            // Attempt to create a new helper
-            this.npcPlayerHelper = new NpcPlayerHelperImpl();
-        } catch (InstantiationException | IllegalAccessException e) {
-            // Fail miserably
-            throw new RuntimeException(e);
-        }
+
+        this.npcPlayerHelper = new NpcPlayerHelperImpl();
         npcManager = new NpcManager(this);
 
         NpcNameGeneratorFactory.setNameGenerator(new NpcNameGeneratorImpl(this));
