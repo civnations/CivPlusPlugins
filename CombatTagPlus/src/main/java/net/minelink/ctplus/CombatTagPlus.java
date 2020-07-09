@@ -76,12 +76,24 @@ public final class CombatTagPlus extends JavaPlugin {
             getLogger().info("Configuration file has been updated.");
         }
 
+        // Disable plugin if version compatibility check fails
+        if (!checkVersionCompatibility()) {
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         // Initialize plugin state
         hookManager = new HookManager(this);
         tagManager = new TagManager(this);
-        if (npcPlayerHelper != null) {
-            npcManager = new NpcManager(this);
+        // Helper class was found
+        try {
+            // Attempt to create a new helper
+            npcPlayerHelper = (NpcPlayerHelper) helperClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            // Fail miserably
+            throw new RuntimeException(e);
         }
+        npcManager = new NpcManager(this);
 
         NpcNameGeneratorFactory.setNameGenerator(new NpcNameGeneratorImpl(this));
 
