@@ -76,12 +76,6 @@ public final class CombatTagPlus extends JavaPlugin {
             getLogger().info("Configuration file has been updated.");
         }
 
-        // Disable plugin if version compatibility check fails
-        if (!checkVersionCompatibility()) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-
         // Initialize plugin state
         hookManager = new HookManager(this);
         tagManager = new TagManager(this);
@@ -126,35 +120,6 @@ public final class CombatTagPlus extends JavaPlugin {
     @Override
     public void onDisable() {
         TagUpdateTask.cancelTasks(this);
-    }
-
-    private boolean checkVersionCompatibility() {
-        // Load NMS compatibility helper class
-        Class<?> helperClass = ReflectionUtils.getCompatClass("NpcPlayerHelperImpl");
-
-        // Warn about incompatibility and return false indicating failure
-        if (helperClass == null) {
-            // Always compatible if NPCs aren't being used
-            if (settings.instantlyKill() && !settings.alwaysSpawn()) {
-                return true;
-            }
-            getLogger().severe("**VERSION ERROR**");
-            getLogger().severe("Server API version detected: " + ReflectionUtils.API_VERSION);
-            getLogger().severe("This version of CombatTagPlus is not compatible with your CraftBukkit.");
-            return false;
-        }
-
-        // Helper class was found
-        try {
-            // Attempt to create a new helper
-            npcPlayerHelper = (NpcPlayerHelper) helperClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            // Fail miserably
-            throw new RuntimeException(e);
-        }
-
-        // Yay, we're compatible! (hopefully)
-        return true;
     }
 
     @Override
