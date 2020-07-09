@@ -17,6 +17,7 @@ import net.minelink.ctplus.task.TagUpdateTask;
 import net.minelink.ctplus.util.BarUtils;
 import net.minelink.ctplus.util.ReflectionUtils;
 import net.minelink.ctplus.util.Version;
+import net.minelink.ctplus.nms.NpcPlayerHelperImpl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -88,7 +89,7 @@ public final class CombatTagPlus extends JavaPlugin {
         // Helper class was found
         try {
             // Attempt to create a new helper
-            npcPlayerHelper = (NpcPlayerHelper) helperClass.newInstance();
+            this.npcPlayerHelper = new NpcPlayerHelperImpl();
         } catch (InstantiationException | IllegalAccessException e) {
             // Fail miserably
             throw new RuntimeException(e);
