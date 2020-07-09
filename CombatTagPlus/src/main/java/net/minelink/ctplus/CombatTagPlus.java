@@ -77,12 +77,6 @@ public final class CombatTagPlus extends JavaPlugin {
             getLogger().info("Configuration file has been updated.");
         }
 
-        // Disable plugin if version compatibility check fails
-        if (!checkVersionCompatibility()) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-
         // Initialize plugin state
         hookManager = new HookManager(this);
         tagManager = new TagManager(this);
