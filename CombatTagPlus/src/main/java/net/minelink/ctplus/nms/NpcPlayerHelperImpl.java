@@ -48,7 +48,6 @@ public final class NpcPlayerHelperImpl implements NpcPlayerHelper {
         }
 
         worldServer.addEntity(npcPlayer);
-        worldServer.getChunkProvider().addEntity(npcPlayer);
 
         return npcPlayer.getBukkitEntity();
     }
