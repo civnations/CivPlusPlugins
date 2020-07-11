@@ -61,6 +61,7 @@ public class CombatUtil {
 		}.runTask(Finale.getPlugin());
 	}
 	
+	// Whoever accepted this PR with 0 comments should be banned (It was Max. I know it was Max.)
 	public static void attack(EntityHuman attacker, Entity entity) {
 		CombatConfig config = Finale.getPlugin().getManager().getCombatConfig();
         if (entity.bA()) {
