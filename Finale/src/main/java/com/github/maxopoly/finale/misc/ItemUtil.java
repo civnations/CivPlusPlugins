@@ -19,7 +19,7 @@ import net.minecraft.server.v1_15_R1.NBTTagList;
 import net.minecraft.server.v1_15_R1.NBTTagString;
 
 public class ItemUtil {
-
+	
 	private static final List<Material> HELMET = Arrays.asList(Material.DIAMOND_HELMET, Material.CHAINMAIL_HELMET, Material.IRON_HELMET, Material.GOLDEN_HELMET, Material.LEATHER_HELMET);
 	private static final List<Material> CHEST = Arrays.asList(Material.DIAMOND_CHESTPLATE, Material.CHAINMAIL_CHESTPLATE, Material.IRON_CHESTPLATE, Material.GOLDEN_CHESTPLATE, Material.LEATHER_CHESTPLATE, Material.ELYTRA);
 	private static final List<Material> LEGS = Arrays.asList(Material.DIAMOND_LEGGINGS, Material.CHAINMAIL_LEGGINGS, Material.IRON_LEGGINGS, Material.GOLDEN_LEGGINGS, Material.LEATHER_LEGGINGS);
@@ -47,43 +47,43 @@ public class ItemUtil {
 			.put(Material.DIAMOND_CHESTPLATE, new ArmourConfig(2, 8))
 			.put(Material.DIAMOND_HELMET, new ArmourConfig(2, 3))
 			.build();
-
+	
 	public static double getDefaultArmourToughness(ItemStack is) {
 		if (!(DEFAULT_ARMOUR.containsKey(is.getType()))) {
 			return 0;
 		}
-
+		
 		return DEFAULT_ARMOUR.get(is.getType()).getToughness();
 	}
-
+	
 	public static double getDefaultArmour(ItemStack is) {
 		if (!(DEFAULT_ARMOUR.containsKey(is.getType()))) {
 			return 0;
 		}
-
+		
 		return DEFAULT_ARMOUR.get(is.getType()).getArmour();
 	}
-
+	
 	public static boolean isHelmet(ItemStack is) {
 		return HELMET.contains(is.getType());
 	}
-
+	
 	public static boolean isChestplate(ItemStack is) {
 		return CHEST.contains(is.getType());
 	}
-
+	
 	public static boolean isLeggings(ItemStack is) {
 		return LEGS.contains(is.getType());
 	}
-
+	
 	public static boolean isBoots(ItemStack is) {
 		return BOOTS.contains(is.getType());
 	}
-
+	
 	public static boolean isArmour(ItemStack is) {
 		return isHelmet(is) || isChestplate(is) || isLeggings(is) || isBoots(is);
 	}
-
+	
 	public static net.minecraft.server.v1_15_R1.ItemStack getNMSStack(ItemStack is) {
 		net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(is);
 		NBTTagCompound compound = (nmsStack.hasTag()) ? nmsStack.getTag() : new NBTTagCompound();
@@ -97,29 +97,29 @@ public class ItemUtil {
 	public static ItemStack setDamage(ItemStack is, double adjustedDamage)  {
 		return modifyAttribute(is, AttributeModifier.attackDamage(adjustedDamage));
 	}
-
+	
 	public static ItemStack setAttackSpeed(ItemStack is, double adjustedAttackSpeed) {
 		return modifyAttribute(is, AttributeModifier.attackSpeed(adjustedAttackSpeed));
 	}
-
+	
 	public static ItemStack setArmour(ItemStack is, double adjustedArmour) {
 		return modifyAttribute(is, AttributeModifier.armour(adjustedArmour, Slot.getArmourSlot(is)));
 	}
-
+	
 	public static ItemStack setArmourToughness(ItemStack is, double adjustedArmourToughness) {
 		return modifyAttribute(is, AttributeModifier.toughness(adjustedArmourToughness, Slot.getArmourSlot(is)));
 	}
-
+	
 	public static ItemStack modifyAttribute(ItemStack is, AttributeModifier attribute) {
 		net.minecraft.server.v1_15_R1.ItemStack nmsStack = getNMSStack(is);
 		NBTTagCompound compound = nmsStack.getTag();
 		NBTTagList modifiers = compound.getList("AttributeModifiers", 10); // 10 for compound
-
+		
 		Number value = attribute.getValue();
 		NBTBase valueTag = (value instanceof Double) ? NBTTagDouble.a((Double) value) : NBTTagInt.a((Integer) value);
-
+		
 		Slot slot = attribute.getSlot();
-
+		
 		NBTTagCompound damage = new NBTTagCompound();
 		damage.set("AttributeName", NBTTagString.a(attribute.getName()));
 		damage.set("Name", NBTTagString.a(attribute.getName()));
@@ -129,11 +129,11 @@ public class ItemUtil {
 		damage.set("UUIDLeast", NBTTagInt.a(slot.getUuidLeast()));
 		damage.set("UUIDMost", NBTTagInt.a(slot.getUuidMost()));
 		modifiers.add(damage);
-
+		
 		compound.set("AttributeModifiers", modifiers);
 		nmsStack.setTag(compound);
 		ItemStack result = CraftItemStack.asBukkitCopy(nmsStack);
 		return result;
 	}
-
+	
 }

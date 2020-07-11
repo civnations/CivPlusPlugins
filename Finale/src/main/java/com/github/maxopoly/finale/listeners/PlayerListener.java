@@ -1,6 +1,7 @@
 package com.github.maxopoly.finale.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
@@ -55,14 +56,15 @@ public class PlayerListener implements Listener {
 				}
 				victim.setNoDamageTicks(ticks - 1);
 			}
-
+			
 		}, 1L);
 	}
 
 	@EventHandler
 	public void healthRegen(EntityRegainHealthEvent e) {
-		if (!manager.isRegenHandlerEnabled())
+		if (!manager.isRegenHandlerEnabled()) {
 			return;
+		}
 		if (e.getEntityType() != EntityType.PLAYER) {
 			return;
 		}
@@ -77,9 +79,9 @@ public class PlayerListener implements Listener {
 					.getWorld()).getHandle()).spigotConfig.regenExhaustion;
 			float newExhaustion = (float) (p.getExhaustion() - e.getAmount() * spigotRegenExhaustion);
 
-			StringBuffer alterHealth = null;
+			StringBuilder alterHealth = null;
 			if (manager.isDebug()) {
-				alterHealth = new StringBuffer("SATIATED: " + p.getName());
+				alterHealth = new StringBuilder("SATIATED: " + p.getName());
 				alterHealth.append(":").append(p.getHealth()).append("<").append(maxHealth);
 				alterHealth.append(":").append(p.getSaturation()).append(":").append(p.getExhaustion());
 				alterHealth.append(":").append(p.getFoodLevel());
@@ -103,7 +105,7 @@ public class PlayerListener implements Listener {
 			Player p = (Player) e.getEntity();
 			double maxHealth = p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 			if (manager.isDebug()) {
-				StringBuffer alterHealth = new StringBuffer("EATING:" + p.getName());
+				StringBuilder alterHealth = new StringBuilder("EATING:" + p.getName());
 				alterHealth.append(":").append(p.getHealth()).append("<").append(maxHealth);
 				alterHealth.append(":").append(p.getSaturation()).append(":").append(p.getExhaustion());
 				alterHealth.append(":").append(p.getFoodLevel());
@@ -121,6 +123,13 @@ public class PlayerListener implements Listener {
 		if (manager.isRegenHandlerEnabled()) {
 			// Register login for custom health regen
 			manager.getPassiveRegenHandler().registerPlayer(e.getPlayer().getUniqueId());
+		}
+		if (Finale.getPlugin().getCombatTagPlusManager() == null) {
+			return;
+		}
+		if (manager.getCTPOnLogin()) {
+			Finale.getPlugin().getCombatTagPlusManager().tag(e.getPlayer(), null);
+			e.getPlayer().sendMessage(ChatColor.RED + "You have been combat tagged on login");
 		}
 	}
 

@@ -35,62 +35,65 @@ import com.google.common.collect.Sets;
 import net.md_5.bungee.api.ChatColor;
 
 public class AsyncPacketHandler extends PacketAdapter implements Listener {
-
+	
 	private double maxReach;
 	private int cpsLimit;
-
+	
 	public AsyncPacketHandler() {
 		super(Finale.getPlugin(), ListenerPriority.HIGH, PacketType.Play.Client.USE_ENTITY, PacketType.Play.Client.ARM_ANIMATION, PacketType.Play.Client.BLOCK_DIG);
-
+		
 		CombatConfig cc = Finale.getPlugin().getManager().getCombatConfig();
 		maxReach = cc.getMaxReach();
 		cpsLimit = cc.getCPSLimit();
-
+		
 		Bukkit.getPluginManager().registerEvents(this, Finale.getPlugin());
 	}
-
+	
 	private Set<UUID> isDigging = Sets.newConcurrentHashSet();
 	private Map<UUID, Long> lastRemovals = new HashMap<>();
 	private Map<UUID, Long> lastStartBreaks = new HashMap<>();
-
+	
 	@Override
 	public void onPacketReceiving(PacketEvent event) {
 		PacketType packetType = event.getPacketType();
-
+		
 		CPSHandler cpsHandler = Finale.getPlugin().getManager().getCPSHandler();
 		if (packetType == PacketType.Play.Client.USE_ENTITY) {
 			Player attacker = event.getPlayer();
 			World world = attacker.getWorld();
-
+			
 			PacketContainer packet = event.getPacket();
 			Entity entity = packet.getEntityModifier(event).read(0);
 			Damageable target = entity instanceof Damageable ? (Damageable)entity : null;
-
-			if (target == null) return;
-			if (target.isDead()) return;
-			if (target.isInvulnerable()) return;
-			if (!world.getUID().equals(target.getWorld().getUID())) return;
-			if (!(target instanceof LivingEntity)) return;
-
-			event.setCancelled(true);
-
+			
+			if (target == null || target.isDead() || target.isInvulnerable() ||
+					!world.getUID().equals(target.getWorld().getUID()) || !(target instanceof LivingEntity)) {
+				return;
+			}
+			
 			LivingEntity entityTarget = (LivingEntity) target;
-
+			
 			StructureModifier<EntityUseAction> actions = packet.getEntityUseActions();
 			EntityUseAction action = actions.read(0);
-
-			if (action != EntityUseAction.ATTACK) return;
+			
+			if (action != EntityUseAction.ATTACK) {
+				return;
+			}
+			event.setCancelled(true);
+			
 			//cpsHandler.updateClicks(attacker);
-
+			
 			double distanceSquared = attacker.getLocation().distanceSquared(target.getLocation());
-
-			if (distanceSquared > (maxReach * maxReach)) return;
-
+			
+			if (distanceSquared > (maxReach * maxReach)) {
+				return;
+			}
+			
 			if (cpsHandler.getCPS(attacker.getUniqueId()) >= cpsLimit) {
 				attacker.sendMessage(ChatColor.RED + "You've hit CPS limit of " + cpsLimit + "!");
 				return;
 			}
-
+			
 			CombatUtil.attack(attacker, entityTarget);
 		} else if (packetType == PacketType.Play.Client.ARM_ANIMATION) {
 			Player attacker = event.getPlayer();
@@ -101,11 +104,11 @@ public class AsyncPacketHandler extends PacketAdapter implements Listener {
 			}
 		} else if (packetType == PacketType.Play.Client.BLOCK_DIG) {
 			Player attacker = event.getPlayer();
-
+			
 			if (attacker.getGameMode() != GameMode.SURVIVAL) {
 				return;
 			}
-
+			
 			PacketContainer packet = event.getPacket();
 			BlockPosition position = packet.getBlockPositionModifier().getValues().get(0);
 			PlayerDigType digType = packet.getPlayerDigTypes().getValues().get(0);
@@ -116,18 +119,18 @@ public class AsyncPacketHandler extends PacketAdapter implements Listener {
 					cpsHandler.updateClicks(attacker);
 					return;
 				}
-
+				
 				float strength = ((CraftWorld) block.getWorld()).getHandle()
 						.getType(new net.minecraft.server.v1_15_R1.BlockPosition(position.getX(), position.getY(), position.getZ()))
 						.getBlock().strength;
-
+				
 				long lastStartBreak = lastStartBreaks.getOrDefault(attacker.getUniqueId(), 0L);
 				long timeSinceBreak = (System.currentTimeMillis() - lastStartBreak);
 				lastStartBreaks.put(attacker.getUniqueId(), System.currentTimeMillis());
 				if (strength > 0) {
 					long lastRemoval = lastRemovals.getOrDefault(attacker.getUniqueId(), 0L);
 					long timeSinceRemoval = (System.currentTimeMillis() - lastRemoval);
-
+					
 					if (isDigging.contains(attacker.getUniqueId())) {
 						return;
 					}
@@ -142,19 +145,19 @@ public class AsyncPacketHandler extends PacketAdapter implements Listener {
 			}
 		}
 	}
-
+	
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e) {
 		Player player = e.getPlayer();
-
+		
 		if (isDigging.contains(player.getUniqueId())) {
 			isDigging.remove(player.getUniqueId());
 		}
-
+		
 		if (lastRemovals.containsKey(player.getUniqueId())) {
 			lastRemovals.remove(player.getUniqueId());
 		}
-
+		
 		if (lastStartBreaks.containsKey(player.getUniqueId())) {
 			lastStartBreaks.remove(player.getUniqueId());
 		}

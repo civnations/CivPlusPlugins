@@ -2,6 +2,8 @@
 alterAttack:
   enabled: true
   speed: 1024
+#CombatTag player on login?
+ctpOnLogin: true
   
 cleanerCombat:
   maxReach: 6.0
@@ -47,15 +49,8 @@ pearls:
   enabled: true
 #Custom pearl cooldown
   cooldown: 16s
-#Display in sidebar as score board entry?
-  useSideBar: false
-#Display in actionbar?
-  useActionBar: true
 #Combat tag using CTP when pearling?
   combatTag: true
-#Whether to set the vanilla cooldown (gray overlay) for players upon pearling. This will keep them from pearling client side, 
-#but they wont be able to see a cooldown in chat anymore and sometimes it's a bit laggy
-  setVanillaCooldown: false
   
 #allows adjusting the attack damage of any item by its spigot material identifier
 weaponModification:
