@@ -167,7 +167,8 @@ public class CombatUtil {
                     		y *= config.getWaterVertical();
                     		z *= config.getWaterHorizontal();
                     	}
-                    	entity.f(x, y, z);
+						// Adds x, y, z to the entity's current velocity (basically)
+                    	entity.h(x, y, z);
 
                     	attacker.setMot(attacker.getMot().d(config.getAttackMotionModifier(), 1.0, config.getAttackMotionModifier()));
                     	attacker.setSprinting(!config.isStopSprinting());
