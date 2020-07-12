@@ -5,13 +5,16 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 
 import com.github.maxopoly.finale.external.CombatTagPlusManager;
+import com.github.maxopoly.finale.external.FinaleSettingManager;
 import com.github.maxopoly.finale.listeners.DamageListener;
 import com.github.maxopoly.finale.listeners.EnchantmentDisableListener;
 import com.github.maxopoly.finale.listeners.PearlCoolDownListener;
 import com.github.maxopoly.finale.listeners.PlayerListener;
 import com.github.maxopoly.finale.listeners.PotionListener;
+import com.github.maxopoly.finale.listeners.ToolProtectionListener;
 import com.github.maxopoly.finale.listeners.VelocityFixListener;
 import com.github.maxopoly.finale.listeners.WeaponModificationListener;
+import com.github.maxopoly.finale.overlay.ScoreboardHUD;
 
 import vg.civcraft.mc.civmodcore.ACivMod;
 
@@ -24,10 +27,9 @@ public class Finale extends ACivMod {
 	}
 	
 	private FinaleManager manager;
-
 	private CombatTagPlusManager ctpManager;
-
 	private ConfigParser config;
+	private FinaleSettingManager settingsManager;
 
 	public CombatTagPlusManager getCombatTagPlusManager() {
 		return ctpManager;
@@ -35,6 +37,10 @@ public class Finale extends ACivMod {
 
 	public FinaleManager getManager() {
 		return manager;
+	}
+	
+	public FinaleSettingManager getSettingsManager() {
+		return settingsManager;
 	}
 
 	private void initExternalManagers() {
@@ -68,19 +74,22 @@ public class Finale extends ACivMod {
 		if (config.isPearlEnabled()) {
 			Bukkit.getPluginManager()
 					.registerEvents(new PearlCoolDownListener(config.getPearlCoolDown(), config.combatTagOnPearl(),
-							ctpManager, config.setVanillaPearlCooldown(), config.useSideBarForPearlCooldown(), config.useActionBarForPearlCooldown()), this);
+							ctpManager), this);
 		}
 		Bukkit.getPluginManager().registerEvents(new WeaponModificationListener(), this);
 		Bukkit.getPluginManager().registerEvents(new EnchantmentDisableListener(config.getDisabledEnchants()), this);
 		Bukkit.getPluginManager().registerEvents(new PotionListener(config.getPotionHandler()), this);
 		Bukkit.getPluginManager().registerEvents(new VelocityFixListener(config.getVelocityHandler()), this);
 		Bukkit.getPluginManager().registerEvents(new DamageListener(config.getDamageModifiers()), this);
+		Bukkit.getPluginManager().registerEvents(new ScoreboardHUD(settingsManager), this);
+		Bukkit.getPluginManager().registerEvents(new ToolProtectionListener(settingsManager), this);
 	}
 
 	public void reload() {
 		onDisable();
 		config = new ConfigParser(this);
 		manager = config.parse();
+		settingsManager = new FinaleSettingManager();
 		initExternalManagers();
 		registerListener();
 	}

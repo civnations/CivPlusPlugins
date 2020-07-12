@@ -37,9 +37,6 @@ public class ConfigParser {
 	private boolean pearlEnabled;
 	private long pearlCooldown;
 	private boolean combatTagOnPearl;
-	private boolean setVanillaPearlCooldown;
-	private boolean sideBarPearlCooldown;
-	private boolean actionBarPearlCooldown;
 	private PotionHandler potionHandler;
 	private Collection<Enchantment> disabledEnchants;
 	private VelocityHandler velocityHandler;
@@ -77,20 +74,9 @@ public class ConfigParser {
 	public boolean isPearlEnabled() {
 		return pearlEnabled;
 	}
-
-	public boolean setVanillaPearlCooldown() {
-		return setVanillaPearlCooldown;
-	}
 	
 	public CombatConfig getCombatConfig() {
 		return combatConfig;
-	}
-	public boolean useSideBarForPearlCooldown() {
-		return sideBarPearlCooldown;
-	}
-	
-	public boolean useActionBarForPearlCooldown() {
-		return actionBarPearlCooldown;
 	}
 
 	public FinaleManager parse() {
@@ -105,6 +91,9 @@ public class ConfigParser {
 		plugin.info("Attack speed modification enabled: " + attackEnabled);
 		double attackSpeed = config.getDouble("alterAttack.speed", 9.4);
 		plugin.info("Modified attack speed: " + attackSpeed);
+		//CombatTag players on login
+		boolean ctpOnLogin = config.getBoolean("ctpOnLogin");
+		plugin.info("CombatTag on login is set to: " + ctpOnLogin);
 		// Food Health Regen modifications for all players
 		boolean regenEnabled = config.getBoolean("foodHealthRegen.enabled", false);
 		SaturationHealthRegenHandler regenhandler = regenEnabled
@@ -127,7 +116,7 @@ public class ConfigParser {
 		combatConfig = parseCombatConfig(config.getConfigurationSection("cleanerCombat"));
 
 		// Initialize the manager
-		manager = new FinaleManager(debug, attackEnabled, attackSpeed, invulnerableTicks, regenEnabled, regenhandler, weapMod, armourMod,
+		manager = new FinaleManager(debug, attackEnabled, attackSpeed, invulnerableTicks, regenEnabled, ctpOnLogin, regenhandler, weapMod, armourMod,
 				potionHandler, combatConfig);
 		plugin.info("Successfully parsed config");
 		return manager;
@@ -190,7 +179,7 @@ public class ConfigParser {
 
 	private SaturationHealthRegenHandler parseHealthRegen(ConfigurationSection config) {
 		// default values are vanilla 1.8 behavior
-		int interval = (int) parseTime(config.getString("interval", "4s"));
+		int interval = (int) parseTime(config.getString("interval", "4s")) / 50;
 		float exhaustionPerHeal = (float) config.getDouble("exhaustionPerHeal", 3.0);
 		int minimumFood = config.getInt("minimumFood", 18);
 		double healthPerCycle = config.getDouble("healthPerCycle", 1.0);
@@ -205,18 +194,11 @@ public class ConfigParser {
 			return false;
 		}
 		String cooldown = config.getString("cooldown", "10s");
-		System.out.println("cooldown: " + cooldown);
 		pearlCooldown = parseTime(cooldown);
 		plugin.info("Pearl cooldown set to " + pearlCooldown / 20 + " seconds");
 		combatTagOnPearl = config.getBoolean("combatTag", true)
 				&& Bukkit.getPluginManager().isPluginEnabled("CombatTagPlus");
 		plugin.info("Combat tagging on pearling: " + combatTagOnPearl);
-		setVanillaPearlCooldown = config.getBoolean("setVanillaCooldown", false);
-		plugin.info("Setting vanilla cooldown on pearling: " + setVanillaPearlCooldown);
-		sideBarPearlCooldown = config.getBoolean("useSideBar", false);
-		plugin.info("Using sidebar to display pearl cooldown:" + sideBarPearlCooldown);
-		actionBarPearlCooldown = config.getBoolean("useActionBar", true);
-		plugin.info("Using actionbar to display pearl cooldown:" + actionBarPearlCooldown);
 		return true;
 	}
 
