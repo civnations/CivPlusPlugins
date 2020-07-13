@@ -12,8 +12,8 @@ class RadialBiomeGenerator: BiomeGenerator {
 
 	// x, y, and z are the actual coordinate divided by 4, and rounded (I forget if up or down. probably down)
 	override fun getZoomedOutBiome(unshiftedX: Int, y: Int, unshiftedZ: Int): Biome {
-		val x = unshiftedX + ConfigManager.mapImageWidth
-		val z = unshiftedZ + ConfigManager.mapImageHeight
+		val x = unshiftedX + ConfigManager.mapImageWidth / 2
+		val z = unshiftedZ + ConfigManager.mapImageHeight / 2
 		val biomeFromMapImage = ConfigManager.biomeAt(x, z)
 		if (biomeFromMapImage != null) {
 			return chooseAlternative(biomeFromMapImage, x, z)
