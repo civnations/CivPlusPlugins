@@ -33,6 +33,7 @@ maven_install(
       "com.connorlinfoot:ActionBarAPI:1.1",
       "org.inventivetalent:BossBarAPI:1.0.5",
       "co.aikar:acf-bukkit:0.5.0-SNAPSHOT",
+      "nl.rutgerkok:worldgeneratorapi:0.6",
     ],
     repositories = [
       "https://jcenter.bintray.com/",
@@ -51,6 +52,8 @@ maven_install(
       "http://repo.byteflux.net/repository/maven-public/",
       # CivModCore dependency acf-bukkit
       "https://repo.aikar.co/content/groups/aikar/",
+      # WorldGeneratorApi, for OwOrldGen
+      "https://repo.codemc.io/repository/maven-public/",
     ],
     fail_on_missing_checksum = False,
 )
