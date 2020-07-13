@@ -39,7 +39,7 @@ class RadialBiomeGenerator: BiomeGenerator {
 	}
 
 	private fun noiseAt(x: Int, z: Int): Double {
-		val ret = this.noise.noise(x.toDouble() * 0.1, z.toDouble() * 0.1)
+		val ret = this.noise.noise(x.toDouble() * 0.01, z.toDouble() * 0.01)
 		if (ret < 0) {
 			return 0.0
 		}
