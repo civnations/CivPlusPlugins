@@ -20,6 +20,9 @@ class OwOrldGen: JavaPlugin(), Listener {
 
 	@EventHandler
 	fun onWorldGeneratorInit(event: WorldGeneratorInitEvent) {
+		if (event.world.name != "world") {
+			return
+		}
 		event.worldGenerator.biomeGenerator = RadialBiomeGenerator()
 		event.worldGenerator.worldDecorator.withoutDefaultDecorations(DecorationType.UNDERGROUND_ORES)
 		event.worldGenerator.worldDecorator.withoutDefaultDecorations(DecorationType.SURFACE_STRUCTURES)
