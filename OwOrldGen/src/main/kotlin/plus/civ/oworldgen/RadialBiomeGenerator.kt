@@ -33,7 +33,7 @@ class RadialBiomeGenerator: BiomeGenerator {
 		val potentialAlternatives = ConfigManager.biomeAlternatives[biome] ?: return biome
 		val range = 1.0 / (potentialAlternatives.size + 1)
 		val roll = noiseAt(x, z)
-		if (roll >= range * potentialAlternatives.size) {
+		if (roll >= range * (potentialAlternatives.size - 1)) {
 			return biome
 		}
 		return potentialAlternatives[(roll / range).toInt()]
