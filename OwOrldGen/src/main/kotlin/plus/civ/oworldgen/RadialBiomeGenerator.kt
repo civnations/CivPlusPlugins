@@ -22,7 +22,7 @@ class RadialBiomeGenerator: BiomeGenerator {
 		val angle = atan2(x.toDouble(), z.toDouble())
 		val circlePortion = angle / (2.0 * PI)
 		val range = (2.0 * PI) / ConfigManager.radialBiomes.size
-		val biomeIndex = (circlePortion % range).toInt()
+		val biomeIndex = (circlePortion / range).toInt()
 		return chooseAlternative(ConfigManager.radialBiomes[biomeIndex], x, z)
 	}
 
@@ -30,13 +30,20 @@ class RadialBiomeGenerator: BiomeGenerator {
 		val potentialAlternatives = ConfigManager.biomeAlternatives[biome] ?: return biome
 		val range = 1.0 / (potentialAlternatives.size + 1)
 		val roll = noiseAt(x, z)
-		if (roll < range) {
+		if (roll >= range * potentialAlternatives.size) {
 			return biome
 		}
-		return potentialAlternatives[(roll % range).toInt() - 1]
+		return potentialAlternatives[(roll / range).toInt()]
 	}
 
 	private fun noiseAt(x: Int, z: Int): Double {
-		return this.noise.noise(x.toDouble(), z.toDouble())
+		val ret = this.noise.noise(x.toDouble(), z.toDouble())
+		if (ret < 0) {
+			return 0.0
+		}
+		if (ret > 1) {
+			return 1.0
+		}
+		return ret
 	}
 }
