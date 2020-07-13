@@ -19,10 +19,13 @@ class RadialBiomeGenerator: BiomeGenerator {
 			return chooseAlternative(biomeFromMapImage, x, z)
 		}
 
-		val angle = atan2(x.toDouble(), z.toDouble())
+		val angle = atan2(z.toDouble(), x.toDouble()) + PI
 		val circlePortion = angle / (2.0 * PI)
-		val range = (2.0 * PI) / ConfigManager.radialBiomes.size
-		val biomeIndex = (circlePortion / range).toInt()
+		val range = 1.0 / ConfigManager.radialBiomes.size
+		var biomeIndex = (circlePortion / range).toInt()
+		if (biomeIndex == ConfigManager.radialBiomes.size) {
+			biomeIndex--
+		}
 		return chooseAlternative(ConfigManager.radialBiomes[biomeIndex], x, z)
 	}
 
