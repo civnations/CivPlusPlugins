@@ -5,15 +5,16 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import java.awt.Color
+import kotlin.math.abs
 
 object ConfigManager {
 	private val mapImage: BufferedImage = ImageIO.read(File(OwOrldGen.instance.dataFolder, "biome_map.png"))
-	private val biomeColors = HashMap<Int, Biome>()
+	private val biomeColors = HashMap<Color, Biome>()
 	init {
-		biomeColors[Color.RED.rgb] = Biome.DESERT
-		biomeColors[Color.BLUE.rgb] = Biome.OCEAN
-		biomeColors[Color.BLACK.rgb] = Biome.DEEP_OCEAN
-		biomeColors[Color.GREEN.rgb] = Biome.RIVER
+		biomeColors[Color.RED] = Biome.DESERT
+		biomeColors[Color.BLUE] = Biome.OCEAN
+		biomeColors[Color.BLACK] = Biome.DEEP_OCEAN
+		biomeColors[Color.GREEN] = Biome.RIVER
 	}
 
 	const val seed: Long = 853945834
@@ -50,7 +51,19 @@ object ConfigManager {
 		if (x < 0 || x >= mapImage.width || z < 0 || z >= mapImage.height) {
 			return Biome.DEEP_OCEAN
 		}
-		val mapColorThere: Int = mapImage.getRGB(x, z)
-		return biomeColors[mapColorThere]
+		val mapColorThere: Color = Color(mapImage.getRGB(x, z))
+		if (mapColorThere == Color.WHITE) {
+			return null
+		}
+		var ret: Biome? = null
+		var closestDif = 765
+		for (color in biomeColors.keys) {
+			val dif = abs(mapColorThere.red - color.red) + abs(mapColorThere.blue - color.blue) + abs(mapColorThere.green - color.green)
+			if (dif < closestDif) {
+				ret = biomeColors[color]
+				closestDif = dif
+			}
+		}
+		return ret
 	}
 }
