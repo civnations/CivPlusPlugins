@@ -26,10 +26,13 @@ class CTAnnounce: Hack(), Listener {
 		if (event.victim == null || event.attacker == null) return
 		
 		// Throttle broadcast frequency
-		val lastTag = lastCTAnnounce.get(event.getVictim().getUniqueId())
+		val victimId = event.victim.uniqueId
+		val lastTag = lastCTAnnounce[victimId]
 		val now = System.currentTimeMillis()
-		if (lastTag != null && now - lastTag < delay) return
-		lastCTAnnounce.put(event.getVictim().getUniqueId(), now)
+		if (lastTag != null && now - lastTag < delay) {
+			return
+		}
+		lastCTAnnounce[victimId] = now
 
 		val cleanMessage = ChatColor.translateAlternateColorCodes('&',
 			message

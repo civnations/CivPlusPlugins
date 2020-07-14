@@ -9,6 +9,7 @@ import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 import java.util.logging.Level
+import kotlin.math.floor
 
 fun checkForTeleportSpace(loc: Location): Boolean {
     val block = loc.block
@@ -17,16 +18,14 @@ fun checkForTeleportSpace(loc: Location): Boolean {
         return false
     }
     val above = block.getRelative(BlockFace.UP)
-    return if (above.type.isSolid) {
-        false
-    } else true
+    return !above.type.isSolid
 }
 
 fun tryToTeleportVertically(player: Player, location: Location, reason: String): Boolean {
     var loc = location.clone()
-    loc.x = Math.floor(loc.x) + 0.500000
-    loc.y = Math.floor(loc.y) + 0.02
-    loc.z = Math.floor(loc.z) + 0.500000
+    loc.x = floor(loc.x) + 0.500000
+    loc.y = floor(loc.y) + 0.02
+    loc.z = floor(loc.z) + 0.500000
     val baseLoc = loc.clone()
     val world = baseLoc.world ?: return false
     // Check if teleportation here is viable
@@ -44,38 +43,38 @@ fun tryToTeleportVertically(player: Player, location: Location, reason: String):
     loc = baseLoc.clone()
     // Create a sliding window of block types and track how many of those
     //  are solid. Keep fetching the block below the current block to move down.
-    var air_count = 0
-    val air_window = LinkedList<Material>()
+    var airCount = 0
+    val airWindow = LinkedList<Material>()
     loc.y = (world.maxHeight.toFloat() - 2).toDouble()
     var block = world.getBlockAt(loc)
     for (i in 0..3) {
-        val block_mat = block.type
-        if (!block_mat.isSolid) {
-            ++air_count
+        val blockMat = block.type
+        if (!blockMat.isSolid) {
+            ++airCount
         }
-        air_window.addLast(block_mat)
+        airWindow.addLast(blockMat)
         block = block.getRelative(BlockFace.DOWN)
     }
     // Now that the window is prepared, scan down the Y-axis.
     while (block.y >= 1) {
-        val block_mat = block.type
-        if (block_mat.isSolid) {
-            if (air_count == 4) {
+        val blockMat = block.type
+        if (blockMat.isSolid) {
+            if (airCount == 4) {
                 player.velocity = Vector()
                 loc = block.location
-                loc.x = Math.floor(loc.x) + 0.500000
+                loc.x = floor(loc.x) + 0.500000
                 loc.y = loc.y + 1.02
-                loc.z = Math.floor(loc.z) + 0.500000
+                loc.z = floor(loc.z) + 0.500000
                 player.teleport(loc)
                 Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' $reason: Teleported to $loc")
                 return true
             }
         } else {
-            ++air_count
+            ++airCount
         }
-        air_window.addLast(block_mat)
-        if (!air_window.removeFirst().isSolid) {
-            --air_count
+        airWindow.addLast(blockMat)
+        if (!airWindow.removeFirst().isSolid) {
+            --airCount
         }
         block = block.getRelative(BlockFace.DOWN)
     }

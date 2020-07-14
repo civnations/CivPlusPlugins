@@ -27,8 +27,8 @@ class SaveDeathInventory: Hack(), Listener, CommandExecutor {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        inventories.put(event.entity.uniqueId, event.entity.inventory.contents)
-        exp.put(event.entity.uniqueId, Pair(event.entity.level, event.entity.exp))
+        inventories[event.entity.uniqueId] = event.entity.inventory.contents
+        exp[event.entity.uniqueId] = Pair(event.entity.level, event.entity.exp)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, commandName: String, args: Array<out String>): Boolean {
@@ -38,7 +38,7 @@ class SaveDeathInventory: Hack(), Listener, CommandExecutor {
         val player: Player? = getPlayerByString(args[0])
         if (player == null) {
             sender.sendMessage("${ChatColor.RED}${args[0]} is not valid or is not online")
-            return true;
+            return true
         }
 
         val inv = inventories[player.uniqueId]
@@ -54,6 +54,6 @@ class SaveDeathInventory: Hack(), Listener, CommandExecutor {
             player.exp = exp.second
         }
 
-        return true;
+        return true
     }
 }

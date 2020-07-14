@@ -6,20 +6,20 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockPlaceEvent
+import java.util.*
 
-public class ChunkLimits: Hack(), Listener {
+class ChunkLimits: Hack(), Listener {
 	override val configName = "chunkLimits"
 	override val prettyName = "Chunk Limits"
 	
-	private val limits: HashMap<Material, Int>
+	private val limits: EnumMap<Material, Int> = EnumMap(org.bukkit.Material::class.java)
 	init {
-		limits = HashMap<Material, Int>()
 		val materials = config.getConfigurationSection("limits")
 		if (materials != null) {
 			for (key in materials.getKeys(false)) {
 				val mat = Material.getMaterial(key) ?: continue
 				val lim = materials.getInt(key)
-				limits.put(mat, lim)
+				limits[mat] = lim
 			}
 		}
 	}
@@ -31,17 +31,15 @@ public class ChunkLimits: Hack(), Listener {
 			return
 		}
 		val bl = event.block
-		val lim: Int? = limits.get(bl.type)
-		if (lim == null) {
-			return
-		}
-		var count: Int = 0
+		val lim = limits[bl.type] ?: return
+
+		var count = 0
 		for (state in bl.chunk.tileEntities) {
 			if (bl.type == state.type) {
 				if (++count > lim) {
-					event.setCancelled(true);
-					event.player.sendMessage(chunkLimitExceededMessage);
-					return;
+					event.isCancelled = true
+					event.player.sendMessage(chunkLimitExceededMessage)
+					return
 				}
 			}
 		}

@@ -13,7 +13,7 @@ import vg.civcraft.mc.citadel.Citadel
 import dev.civmc.bumhug.Depend
 
 @Depend("Citadel")
-public class RaiderAnnounce: Hack(), Listener {
+class RaiderAnnounce: Hack(), Listener {
 	override val configName = "raiderAnnounce"
 	override val prettyName = "Raider Announce"
 
@@ -25,20 +25,17 @@ public class RaiderAnnounce: Hack(), Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onReinforcementBreak(event: BlockBreakEvent) {
-		val man = Citadel.getInstance().getReinforcementManager()
-		if (man == null) {
-			return
-		}
+		val man = Citadel.getInstance().reinforcementManager ?: return
 		val isReinforced = man.getReinforcement(event.block) != null
 		if (isReinforced && (event.block.type == Material.CHEST || event.block.type == Material.TRAPPED_CHEST)) {
-			val last: Long? = lastAlertSent.get(event.player)
+			val last: Long? = lastAlertSent[event.player]
 			val now = System.currentTimeMillis()
 			if (last == null) {
-				lastAlertSent.put(event.player, now)
+				lastAlertSent[event.player] = now
 			} else if (now - last < messageDelay) {
 				return
 			} else {
-				lastAlertSent.put(event.player, now)
+				lastAlertSent[event.player] = now
 			}
 
 			val cleanMessage = ChatColor.translateAlternateColorCodes('&',

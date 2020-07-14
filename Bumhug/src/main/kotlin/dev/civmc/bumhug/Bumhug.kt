@@ -50,7 +50,7 @@ class Bumhug: JavaPlugin() {
 						}
 					}
 					
-					hacks.put(hack.configName, hack)
+					hacks[hack.configName] = hack
 					if (Listener::class.java.isAssignableFrom(hack::class.java)) {
 						this.server.pluginManager.registerEvents(hack as Listener, this)
 					}
@@ -69,7 +69,7 @@ class Bumhug: JavaPlugin() {
 	
 	fun broadcastToPerm(perm: String, message: String) {
 		for (player in this.server.onlinePlayers) {
-			if (player.hasPermission("bumhug." + perm)) {
+			if (player.hasPermission("bumhug.$perm")) {
 				player.sendMessage(message)
 			}
 		}

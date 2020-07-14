@@ -101,11 +101,11 @@ class GameFeatures: Hack(), Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true) 
-	fun EnderChestUse(event: PlayerInteractEvent) {
+	fun onEnderChestUse(event: PlayerInteractEvent) {
 		if (!enderChestUse) {
 			val clickedBlock = event.clickedBlock ?: return
 			if (event.action == Action.RIGHT_CLICK_BLOCK && clickedBlock.type == Material.ENDER_CHEST) {
-				event.isCancelled = true;
+				event.isCancelled = true
 			}
 		}
 	}
@@ -113,14 +113,14 @@ class GameFeatures: Hack(), Listener {
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onShulkerBoxUse(event: InventoryOpenEvent){
 		if (!shulkerBoxUse && event.inventory.type == InventoryType.SHULKER_BOX) {
-			event.isCancelled = true;
+			event.isCancelled = true
 		}
 	}
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onShulkerBoxHoppering(event: InventoryMoveItemEvent) {
 		if (!shulkerBoxUse) {
 			if (event.destination.type == InventoryType.SHULKER_BOX || event.source.type == InventoryType.SHULKER_BOX) {
-				event.isCancelled = true;
+				event.isCancelled = true
 			}
 		}
 	}
@@ -150,7 +150,7 @@ class GameFeatures: Hack(), Listener {
 			event.player.leaveVehicle()
 
 			if (!tryToTeleportVertically(event.player, vehicleLocation, "logged out")) {
-				event.player.setHealth(0.000000)
+				event.player.health = 0.000000
 				Bumhug.instance.logger.log(Level.INFO, "Player '${event.player.name}' logged out in vehicle: killed")
 			}
 		}
@@ -160,7 +160,7 @@ class GameFeatures: Hack(), Listener {
 	fun onVehicleExitTeleport(event: VehicleExitEvent) {
 		if (enableMinecartTeleporter) {
 			val player: Player
-			val passenger = event.exited;
+			val passenger = event.exited
 			if (passenger is Player) player = passenger else return
 
 			Bukkit.getScheduler().runTaskLater(Bumhug.instance as Plugin, { _ ->
@@ -180,7 +180,7 @@ class GameFeatures: Hack(), Listener {
 				return
 			}
 
-			passangers.removeIf { !(it is Player) }
+			passangers.removeIf { it !is Player }
 			passangers.forEach {
 				run {
 					val player = it as Player
