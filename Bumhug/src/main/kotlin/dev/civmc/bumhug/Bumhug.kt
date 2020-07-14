@@ -34,7 +34,7 @@ class Bumhug: JavaPlugin() {
 			if (clazz != null && Hack::class.java.isAssignableFrom(clazz)) {
 				logger.log(Level.INFO, "Found hack " + clazz.typeName)
 				
-				val hack = clazz.newInstance() as Hack
+				val hack = clazz.getDeclaredConstructor().newInstance() as Hack
 				if (hack.enabled) {
 					// if the hack has the Depend annotation, make sure all dependencies are loaded
 					val annotations = (clazz.kotlin as KAnnotatedElement).annotations
