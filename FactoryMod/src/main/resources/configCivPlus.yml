@@ -197,7 +197,6 @@ factories:
      - bake_potatoes
      - bake_cookies
      - bake_pie
-     - make_berry_bush
      - repair_bakery
   ore_smelter:
     type: FCC
@@ -419,7 +418,6 @@ factories:
     recipes:
      - adv_xp_1
      - uncarve_pumpkins
-     - uncarve_compacted_pumpkins
      - wither_skull
      - repair_advanced_cauldron
   printing_press:
