@@ -46,6 +46,7 @@ class GameFeatures: Hack(), Listener {
 	private val disableElytraFirework = config.getBoolean("disableElytraFirework")
 	private val enableMinecartTeleporter = config.getBoolean("minecartTeleporter")
 	private val endermanGrief = config.getBoolean("endermanGrief")
+	private val enchanting = config.getBoolean("enchanting")
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onPistonActivate(event: BlockPistonExtendEvent) {
@@ -201,5 +202,19 @@ class GameFeatures: Hack(), Listener {
 		}
 		if (event.entity is Enderman)
 			event.isCancelled = true
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	fun onEnchantmentTableClick(event: PlayerInteractEvent) {
+		if (this.enchanting) {
+			return
+		}
+		if (event.action != Action.RIGHT_CLICK_BLOCK) {
+			return
+		}
+		if (event.clickedBlock?.type != Material.ENCHANTING_TABLE) {
+			return
+		}
+		event.isCancelled = true
 	}
 }
