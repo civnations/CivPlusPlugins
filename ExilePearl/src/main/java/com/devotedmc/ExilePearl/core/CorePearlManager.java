@@ -137,7 +137,7 @@ final class CorePearlManager implements PearlManager {
 
 		if (pearlApi.isPlayerExiled(exiledId)) {
 			ExilePearl pearl = pearlApi.getPearl(exiledId);
-			if(!(pearl.getPearlType() == PearlType.PRISON && pearlApi.getPearlConfig().allowPearlStealing())) {
+			if(!(pearlApi.getPearlConfig().allowPearlStealing())) {
 				return null;
 			}
 		}
