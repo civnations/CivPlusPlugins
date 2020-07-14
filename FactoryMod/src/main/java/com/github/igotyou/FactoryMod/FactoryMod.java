@@ -4,6 +4,10 @@ import com.github.igotyou.FactoryMod.listeners.CitadelListener;
 import com.github.igotyou.FactoryMod.listeners.CompactItemListener;
 import com.github.igotyou.FactoryMod.listeners.FactoryModListener;
 import com.github.igotyou.FactoryMod.utility.FactoryModPermissionManager;
+import com.github.igotyou.FactoryMod.commands.CheatOutput;
+import com.github.igotyou.FactoryMod.commands.Create;
+import com.github.igotyou.FactoryMod.commands.Menu;
+import com.github.igotyou.FactoryMod.commands.RunAmountSetterCommand;
 
 import vg.civcraft.mc.civmodcore.ACivMod;
 
@@ -23,6 +27,13 @@ public class FactoryMod extends ACivMod {
 			permissionManager = new FactoryModPermissionManager();
 		}
 		registerListeners();
+
+		// Still not sure why loadAll() isn't working, but whatever
+		this.getStandaloneCommandHandler().registerCommand(new RunAmountSetterCommand());
+		this.getStandaloneCommandHandler().registerCommand(new CheatOutput());
+		this.getStandaloneCommandHandler().registerCommand(new Menu());
+		this.getStandaloneCommandHandler().registerCommand(new Create());
+		
 		info("Successfully enabled");
 	}
 
