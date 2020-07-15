@@ -60,7 +60,9 @@ class Bumhug: JavaPlugin() {
 						val command = getCommand(commandName) ?: continue
 						command.setExecutor(hack as CommandExecutor)
                     }
-					
+
+					hack.onEnable()
+
 					logger.log(Level.INFO, "Loaded hack " + hack.prettyName)
 				}
 			}

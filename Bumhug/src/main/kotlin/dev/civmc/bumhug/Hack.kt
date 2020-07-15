@@ -20,4 +20,6 @@ abstract class Hack {
 		}
 
 	open val commandName: String? = null
+
+	open fun onEnable() {}
 }
