@@ -78,3 +78,7 @@ intervalAnnouncement:
       # Can be any permission. This one is the default, and anyone with the permission will receive that announcement.
 xpRecipes:
   enabled: false
+invSee:
+  enabled: true
+saveDeathInv:
+  enabled: true
