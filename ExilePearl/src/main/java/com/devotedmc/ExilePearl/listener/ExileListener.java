@@ -278,23 +278,6 @@ public class ExileListener extends RuleListener implements Configurable {
 		}
 	}
 
-
-
-	/**
-	 * Prevent exiled players from drinking potions
-	 * @param e The event
-	 */
-	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-	public void onPlayerDrinkPotion(PlayerItemConsumeEvent e) {
-		if(e.getItem().getType() == Material.POTION) {
-			if (pearlApi.getBrewHandler().isBrew(e.getItem())) {
-				checkAndCancelRule(ExileRule.DRINK_BREWS, e, e.getPlayer());
-			} else {
-				checkAndCancelRule(ExileRule.USE_POTIONS, e, e.getPlayer());
-			}
-		}
-	}
-
 	/**
 	 * Prevent exiled players from using splash potions
 	 * @param e The event
