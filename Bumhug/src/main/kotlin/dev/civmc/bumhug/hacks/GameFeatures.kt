@@ -225,7 +225,7 @@ class GameFeatures: Hack(), Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onExperienceSpawn(event: EntitySpawnEvent) {
-		if (event.entity.type == EntityType.EXPERIENCE_ORB && this.naturalXp) {
+		if (event.entity.type == EntityType.EXPERIENCE_ORB && !this.naturalXp) {
 			event.isCancelled =  true
 		}
 	}
