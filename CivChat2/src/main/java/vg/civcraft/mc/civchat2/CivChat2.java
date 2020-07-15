@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import vg.civcraft.mc.civchat2.commands.*;
 import vg.civcraft.mc.civchat2.database.CivChatDAO;
 import vg.civcraft.mc.civchat2.listeners.CivChat2Listener;
 import vg.civcraft.mc.civchat2.utility.CivChat2Config;
@@ -44,6 +45,15 @@ public class CivChat2 extends ACivMod {
 		chatListener = new CivChat2Listener(chatMan);
 		registerNameLayerPermissions();
 		registerCivChatEvents();
+
+		this.getStandaloneCommandHandler().registerCommand(new Afk());
+		this.getStandaloneCommandHandler().registerCommand(new Exit());
+		this.getStandaloneCommandHandler().registerCommand(new GroupChat());
+		this.getStandaloneCommandHandler().registerCommand(new Ignore());
+		this.getStandaloneCommandHandler().registerCommand(new IgnoreGroup());
+		this.getStandaloneCommandHandler().registerCommand(new IgnoreList());
+		this.getStandaloneCommandHandler().registerCommand(new Reply());
+		this.getStandaloneCommandHandler().registerCommand(new Tell());
 	}
 
 	@Override
