@@ -9,6 +9,7 @@ import org.bukkit.Material
 import org.bukkit.block.Biome
 import org.bukkit.entity.Enderman
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -19,9 +20,11 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason
 import org.bukkit.event.entity.EntityChangeBlockEvent
+import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.player.PlayerExpChangeEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -47,6 +50,8 @@ class GameFeatures: Hack(), Listener {
 	private val enableMinecartTeleporter = config.getBoolean("minecartTeleporter")
 	private val endermanGrief = config.getBoolean("endermanGrief")
 	private val enchanting = config.getBoolean("enchanting")
+	// from mobs, smelting, mining, etc
+	private val naturalXp = config.getBoolean("naturalXp")
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onPistonActivate(event: BlockPistonExtendEvent) {
@@ -204,7 +209,7 @@ class GameFeatures: Hack(), Listener {
 			event.isCancelled = true
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onEnchantmentTableClick(event: PlayerInteractEvent) {
 		if (this.enchanting) {
 			return
@@ -216,5 +221,23 @@ class GameFeatures: Hack(), Listener {
 			return
 		}
 		event.isCancelled = true
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	fun onExperienceSpawn(event: EntitySpawnEvent) {
+		if (event.entity.type == EntityType.EXPERIENCE_ORB && this.naturalXp) {
+			event.isCancelled =  true
+		}
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	fun onExperienceBottleThrow(event: PlayerInteractEvent) {
+		if (event.item?.type != Material.EXPERIENCE_BOTTLE) {
+			return
+		}
+		if (!(event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK)) {
+			return
+		}
+		event.player.giveExp(7)
 	}
 }

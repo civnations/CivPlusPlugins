@@ -11,6 +11,7 @@ gameFeatures:
   minecartTeleporter: true
   endermanGrief: false
   enchanting: true
+  naturalXp: true
 gameFixes:
   preventFallingThroughBedrock: true
   preventBedBombing: true
