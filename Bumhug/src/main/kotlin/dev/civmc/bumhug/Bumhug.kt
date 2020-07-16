@@ -34,7 +34,7 @@ class Bumhug: JavaPlugin() {
 			if (clazz != null && Hack::class.java.isAssignableFrom(clazz)) {
 				logger.log(Level.INFO, "Found hack " + clazz.typeName)
 				
-				val hack = clazz.newInstance() as Hack
+				val hack = clazz.getDeclaredConstructor().newInstance() as Hack
 				if (hack.enabled) {
 					// if the hack has the Depend annotation, make sure all dependencies are loaded
 					val annotations = (clazz.kotlin as KAnnotatedElement).annotations
@@ -50,7 +50,7 @@ class Bumhug: JavaPlugin() {
 						}
 					}
 					
-					hacks.put(hack.configName, hack)
+					hacks[hack.configName] = hack
 					if (Listener::class.java.isAssignableFrom(hack::class.java)) {
 						this.server.pluginManager.registerEvents(hack as Listener, this)
 					}
@@ -60,7 +60,9 @@ class Bumhug: JavaPlugin() {
 						val command = getCommand(commandName) ?: continue
 						command.setExecutor(hack as CommandExecutor)
                     }
-					
+
+					hack.onEnable()
+
 					logger.log(Level.INFO, "Loaded hack " + hack.prettyName)
 				}
 			}
@@ -69,7 +71,7 @@ class Bumhug: JavaPlugin() {
 	
 	fun broadcastToPerm(perm: String, message: String) {
 		for (player in this.server.onlinePlayers) {
-			if (player.hasPermission("bumhug." + perm)) {
+			if (player.hasPermission("bumhug.$perm")) {
 				player.sendMessage(message)
 			}
 		}

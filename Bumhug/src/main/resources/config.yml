@@ -10,6 +10,8 @@ gameFeatures:
   disableElytraFirework: true
   minecartTeleporter: true
   endermanGrief: false
+  enchanting: true
+  naturalXp: true
 gameFixes:
   preventFallingThroughBedrock: true
   preventBedBombing: true
@@ -27,9 +29,6 @@ chunkLimits:
     STICKY_PISTON_BASE: 10
     HOPPER: 16
     OBSERVER: 2
-daytimeBed:
-  enabled: true
-  message: "&7Your spawn has been set."
 raiderAnnounce:
   enabled: true
   message: "&4%Name% is raiding a chest at %X%, %Y%, %Z%."
@@ -47,10 +46,6 @@ newfriendAssist:
     bed:
       material: RED_BED
       amount: 1
-oldEnchanting:
-  enabled: true
-  hideEnchantmentTooltips: true
-  enchantCostMultiplier: 1.0
 deathMessages:
   enabled: true
   sendPlayerCoordsOnDeath: true
@@ -81,3 +76,9 @@ intervalAnnouncement:
       message: "&5Color codes can also be used, but need to be in quotes if they start with an ampersand"
       permission: bumhug.intervalannouncement.everyone
       # Can be any permission. This one is the default, and anyone with the permission will receive that announcement.
+xpRecipes:
+  enabled: false
+invSee:
+  enabled: true
+saveDeathInv:
+  enabled: true

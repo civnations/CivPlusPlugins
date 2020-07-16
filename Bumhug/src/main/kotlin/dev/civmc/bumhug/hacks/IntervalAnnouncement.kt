@@ -12,11 +12,13 @@ class IntervalAnnouncement: Hack() {
     override val configName = "intervalAnnouncement"
     override val prettyName = "Interval Announcements"
 
-    val HOURS_PER_DAY = 24
-    val MINUTES_PER_HOUR = 60
-    val SECONDS_PER_MINUTE = 60
+    companion object {
+        const val HOURS_PER_DAY = 24
+        const val MINUTES_PER_HOUR = 60
+        const val SECONDS_PER_MINUTE = 60
+    }
 
-    var announcements = HashSet<Announcement>()
+    private var announcements = HashSet<Announcement>()
 
     data class Announcement(
             /**
@@ -48,7 +50,7 @@ class IntervalAnnouncement: Hack() {
     init {
         // parse all the announcements from the config
         for (key in config.getConfigurationSection("announcements")!!.getKeys(false)) {
-            val configSection = config.getConfigurationSection("announcements." + key)!!
+            val configSection = config.getConfigurationSection("announcements.$key")!!
 
             val message = ChatColor.translateAlternateColorCodes('&', configSection.getString("message")!!)
             val permission = configSection.getString("permission", "bumhug.intervalannouncement.everyone")!!

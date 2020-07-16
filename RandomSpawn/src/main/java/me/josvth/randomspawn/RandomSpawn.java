@@ -216,7 +216,7 @@ public class RandomSpawn extends JavaPlugin {
 				return -1;
 		} else {
 			y = 257;
-			while (y >= 0 && blockMat == Material.AIR) {
+			while (y >= 0 && blockMat.isAir()) {
 				y--;
 				blockMat = world.getBlockAt((int)x,(int) y,(int) z).getType();
 			}

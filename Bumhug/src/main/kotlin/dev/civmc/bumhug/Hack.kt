@@ -9,19 +9,17 @@ annotation class Depend(vararg val dependencies: String)
 abstract class Hack {
 	
 	abstract val configName: String
-	
 	open val prettyName: String = configName
 	
 	val enabled: Boolean
-		get() = Bumhug.instance.config.getBoolean(configName + ".enabled")
+		get() = Bumhug.instance.config.getBoolean("$configName.enabled")
 	protected val config: ConfigurationSection
 		get() {
-			val ret = Bumhug.instance.config.getConfigurationSection(configName)
-			if (ret == null) {
-				throw Exception("Config doesn't include section " + configName + ". Check your config.")
-			}
+			val ret = Bumhug.instance.config.getConfigurationSection(configName) ?: throw Exception("Config doesn't include section $configName. Check your config.")
 			return ret
 		}
 
 	open val commandName: String? = null
+
+	open fun onEnable() {}
 }

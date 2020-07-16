@@ -9,9 +9,8 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
 
-public class NewfriendAssist: Hack(), Listener {
+class NewfriendAssist: Hack(), Listener {
 	override val configName = "newfriendAssist"
 	override val prettyName = "Newfriend Assist"
 	
@@ -21,11 +20,11 @@ public class NewfriendAssist: Hack(), Listener {
 		val kitSection = config.getConfigurationSection("newfriendKit")
 		if (kitSection != null) {
 			for (key in kitSection.getKeys(false)) {
-				val matName = kitSection.getString(key + ".material")!!
+				val matName = kitSection.getString("$key.material")!!
 				val mat = Material.getMaterial(matName)!!
-				val amount = kitSection.getInt(key + ".amount", 1)
-				val lore = kitSection.getList(key + ".lore", ArrayList<String>()) as ArrayList<String>
-				val name = kitSection.getString(key + ".name")
+				val amount = kitSection.getInt("$key.amount", 1)
+				val lore = kitSection.getList("$key.lore", ArrayList<String>()) as ArrayList<String>
+				val name = kitSection.getString("$key.name")
 				
 				val stack = ItemStack(mat, amount)
 				stack.amount = amount

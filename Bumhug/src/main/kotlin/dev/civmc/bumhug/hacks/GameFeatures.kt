@@ -9,6 +9,7 @@ import org.bukkit.Material
 import org.bukkit.block.Biome
 import org.bukkit.entity.Enderman
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -19,9 +20,11 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason
 import org.bukkit.event.entity.EntityChangeBlockEvent
+import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.player.PlayerExpChangeEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -46,6 +49,9 @@ class GameFeatures: Hack(), Listener {
 	private val disableElytraFirework = config.getBoolean("disableElytraFirework")
 	private val enableMinecartTeleporter = config.getBoolean("minecartTeleporter")
 	private val endermanGrief = config.getBoolean("endermanGrief")
+	private val enchanting = config.getBoolean("enchanting")
+	// from mobs, smelting, mining, etc
+	private val naturalXp = config.getBoolean("naturalXp")
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onPistonActivate(event: BlockPistonExtendEvent) {
@@ -100,11 +106,11 @@ class GameFeatures: Hack(), Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true) 
-	fun EnderChestUse(event: PlayerInteractEvent) {
+	fun onEnderChestUse(event: PlayerInteractEvent) {
 		if (!enderChestUse) {
 			val clickedBlock = event.clickedBlock ?: return
 			if (event.action == Action.RIGHT_CLICK_BLOCK && clickedBlock.type == Material.ENDER_CHEST) {
-				event.isCancelled = true;
+				event.isCancelled = true
 			}
 		}
 	}
@@ -112,14 +118,14 @@ class GameFeatures: Hack(), Listener {
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onShulkerBoxUse(event: InventoryOpenEvent){
 		if (!shulkerBoxUse && event.inventory.type == InventoryType.SHULKER_BOX) {
-			event.isCancelled = true;
+			event.isCancelled = true
 		}
 	}
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onShulkerBoxHoppering(event: InventoryMoveItemEvent) {
 		if (!shulkerBoxUse) {
 			if (event.destination.type == InventoryType.SHULKER_BOX || event.source.type == InventoryType.SHULKER_BOX) {
-				event.isCancelled = true;
+				event.isCancelled = true
 			}
 		}
 	}
@@ -149,7 +155,7 @@ class GameFeatures: Hack(), Listener {
 			event.player.leaveVehicle()
 
 			if (!tryToTeleportVertically(event.player, vehicleLocation, "logged out")) {
-				event.player.setHealth(0.000000)
+				event.player.health = 0.000000
 				Bumhug.instance.logger.log(Level.INFO, "Player '${event.player.name}' logged out in vehicle: killed")
 			}
 		}
@@ -159,7 +165,7 @@ class GameFeatures: Hack(), Listener {
 	fun onVehicleExitTeleport(event: VehicleExitEvent) {
 		if (enableMinecartTeleporter) {
 			val player: Player
-			val passenger = event.exited;
+			val passenger = event.exited
 			if (passenger is Player) player = passenger else return
 
 			Bukkit.getScheduler().runTaskLater(Bumhug.instance as Plugin, { _ ->
@@ -179,7 +185,7 @@ class GameFeatures: Hack(), Listener {
 				return
 			}
 
-			passangers.removeIf { !(it is Player) }
+			passangers.removeIf { it !is Player }
 			passangers.forEach {
 				run {
 					val player = it as Player
@@ -201,5 +207,37 @@ class GameFeatures: Hack(), Listener {
 		}
 		if (event.entity is Enderman)
 			event.isCancelled = true
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	fun onEnchantmentTableClick(event: PlayerInteractEvent) {
+		if (this.enchanting) {
+			return
+		}
+		if (event.action != Action.RIGHT_CLICK_BLOCK) {
+			return
+		}
+		if (event.clickedBlock?.type != Material.ENCHANTING_TABLE) {
+			return
+		}
+		event.isCancelled = true
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	fun onExperienceGain(event: PlayerExpChangeEvent) {
+		if (!this.naturalXp) {
+			event.amount =  0
+		}
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	fun onExperienceBottleThrow(event: PlayerInteractEvent) {
+		if (event.item?.type != Material.EXPERIENCE_BOTTLE) {
+			return
+		}
+		if (!(event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK)) {
+			return
+		}
+		event.player.giveExp(7)
 	}
 }

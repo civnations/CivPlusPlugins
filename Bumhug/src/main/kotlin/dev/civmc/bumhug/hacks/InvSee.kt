@@ -7,7 +7,6 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.command.CommandSender
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftInventoryPlayer
-import org.bukkit.craftbukkit.v1_15_R1.CraftServer
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld
 import net.minecraft.server.v1_15_R1.WorldNBTStorage
 import org.bukkit.ChatColor
@@ -43,7 +42,7 @@ class InvSee: Hack(), CommandExecutor {
         }
 
         if (player == null && playerUUID != null) { // Go deep into NBT.
-            val storage = (Bukkit.getWorlds().get(0) as CraftWorld).getHandle().getDataManager() as WorldNBTStorage
+            val storage = (Bukkit.getWorlds()[0] as CraftWorld).handle.dataManager as WorldNBTStorage
             val rawPlayer = storage.getPlayerData(playerUUID.toString())
 
             if (rawPlayer != null) {
@@ -78,7 +77,7 @@ class InvSee: Hack(), CommandExecutor {
         return true
     }
 
-    fun invSee(sender: CommandSender, playerInv: PlayerInventory, health: Double, food: Int, playerName: String) {
+    private fun invSee(sender: CommandSender, playerInv: PlayerInventory, health: Double, food: Int, playerName: String) {
         if (sender !is Player) { // send text only.
             val sb = StringBuffer()
             sb.append(playerName).append("'s\n   Health: ").append(health.toInt() * 2)
@@ -97,18 +96,18 @@ class InvSee: Hack(), CommandExecutor {
 
             sender.sendMessage(sb.toString())
         } else {
-            val inv = Bukkit.createInventory(sender, 45, playerName + "'s Inventory")
+            val inv = Bukkit.createInventory(sender, 45, "$playerName's Inventory")
 
             for (slot in 0..35) {
                 val item = playerInv.getItem(slot)
                 inv.setItem(slot, item)
             }
 
-            inv.setItem(36, playerInv.getItemInOffHand())
-            inv.setItem(38, playerInv.getHelmet())
-            inv.setItem(39, playerInv.getChestplate())
-            inv.setItem(40, playerInv.getLeggings())
-            inv.setItem(41, playerInv.getBoots())
+            inv.setItem(36, playerInv.itemInOffHand)
+            inv.setItem(38, playerInv.helmet)
+            inv.setItem(39, playerInv.chestplate)
+            inv.setItem(40, playerInv.leggings)
+            inv.setItem(41, playerInv.boots)
 
             val healthItem = ItemStack(Material.APPLE, health.toInt() * 2)
             val healthData = healthItem.itemMeta!!

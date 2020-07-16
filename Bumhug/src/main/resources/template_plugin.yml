@@ -2,7 +2,7 @@ name: ${name}
 version: 1.0.0
 main: dev.civmc.bumhug.Bumhug
 author: Soer
-softdepend: [CombatTagPlus, Citadel]
+softdepend: [CombatTagPlus, Citadel, ProtocolLib]
 api-version: 1.15
 
 permissions:

@@ -1,6 +1,7 @@
 .idea/
 .ijwb/
 .settings/
+lib/
 .classpath
 .project
 

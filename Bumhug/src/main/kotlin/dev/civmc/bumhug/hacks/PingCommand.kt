@@ -13,10 +13,6 @@ class PingCommand: Hack(), CommandExecutor {
     override val prettyName = "Ping Command"
     override val commandName = "ping"
 
-    fun pingPlayer(p: Player) {
-        p.sendMessage("Pong!")
-    }
-
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         var player = sender as Player
         if (args.size == 1) {
@@ -38,5 +34,9 @@ class PingCommand: Hack(), CommandExecutor {
         pingPlayer(player)
 
         return true
+    }
+
+    private fun pingPlayer(p: Player) {
+        p.sendMessage("Pong!")
     }
 }

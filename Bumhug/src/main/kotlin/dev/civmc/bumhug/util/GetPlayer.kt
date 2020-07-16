@@ -11,10 +11,10 @@ import java.util.*
  * @return The player, or null if the player wasn't found
  */
 fun getPlayerByString(str: String): Player? {
-    try {
-        return Bukkit.getPlayer(UUID.fromString(str))
+    return try {
+        Bukkit.getPlayer(UUID.fromString(str))
     } catch (e: IllegalArgumentException) {
         // TODO: Use NameAPI to get the player by nickname instead of bukkit name.
-        return Bukkit.getPlayer(str)
+        Bukkit.getPlayer(str)
     }
 }

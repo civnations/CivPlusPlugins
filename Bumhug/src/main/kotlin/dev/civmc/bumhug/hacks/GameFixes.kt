@@ -1,10 +1,9 @@
 package dev.civmc.bumhug.hacks
 
 import dev.civmc.bumhug.Hack
-import dev.civmc.bumhug.util.REEEEEEEEEE
 import dev.civmc.bumhug.util.tryToTeleportVertically
 import org.bukkit.GameMode
-import org.bukkit.Material
+import org.bukkit.Tag
 import org.bukkit.World.Environment
 import org.bukkit.block.Biome
 import org.bukkit.event.EventHandler
@@ -16,7 +15,7 @@ import org.bukkit.event.entity.EntityTeleportEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.InventoryHolder
 
-public class GameFixes: Hack(), Listener {
+class GameFixes: Hack(), Listener {
 	override val configName = "gameFixes"
 	override val prettyName = "Game Fixes"
 	
@@ -27,20 +26,20 @@ public class GameFixes: Hack(), Listener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	fun onStorageTeleport(event: EntityTeleportEvent) {
 		if (event.entity is InventoryHolder && preventStorageTeleport) {
-			event.setCancelled(true)
+			event.isCancelled = true
 		}
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	fun onStoragePortal(event: EntityPortalEvent) {
 		if (event.entity is InventoryHolder && preventStorageTeleport) {
-			event.setCancelled(true)
+			event.isCancelled = true
 		}
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onBedPlace(event: BlockPlaceEvent) {
-		if (!preventBedBombing || !REEEEEEEEEE.isBed(event.block.type)) {
+		if (!preventBedBombing || !Tag.BEDS.isTagged(event.block.type)) {
 			return
 		}
 		val world = event.block.location.world ?: return

@@ -1,0 +1,9 @@
+name: ${name}
+version: 1.0.0
+main: plus.civ.oworldgen.OwOrldGen
+api-version: 1.15
+authors: [Amelorate, SepiaTones]
+load: STARTUP
+
+depend:
+  - WorldGeneratorApi

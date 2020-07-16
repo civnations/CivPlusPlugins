@@ -1,5 +1,6 @@
 package com.untamedears.jukealert;
 
+import com.untamedears.jukealert.commands.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 
@@ -94,6 +95,12 @@ public class JukeAlert extends ACivMod {
 		settingsManager = new JASettingsManager();
 		registerJukeAlertEvents();
 		JukeAlertPermissionHandler.setup();
+
+		this.getStandaloneCommandHandler().registerCommand(new ClearCommand());
+		this.getStandaloneCommandHandler().registerCommand(new GUICommand());
+		this.getStandaloneCommandHandler().registerCommand(new InfoCommand());
+		this.getStandaloneCommandHandler().registerCommand(new ListCommand());
+		this.getStandaloneCommandHandler().registerCommand(new NameCommand());
 	}
 
 	private void registerJukeAlertEvents() {

@@ -1,0 +1,12 @@
+name: ${name}
+version: 1.0.0
+main: com.devotedmc.ExilePearl.ExilePearlPlugin
+depend: [CivModCore]
+softdepend: [NameLayer, Citadel, CivChat2, JukeAlert, CombatTagPlus, RandomSpawn, WorldBorder, BanStick]
+commands:
+  ep:
+  suicide:
+  pp:
+    description: Legacy prison pearl commands
+    aliases: [pplocate, ppl, ppfree, ppf, ppbroadcast, ppb, ppconfirm, ppsilence]
+api-version: 1.15
