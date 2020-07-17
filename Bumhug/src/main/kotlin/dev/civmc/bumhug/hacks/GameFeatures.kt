@@ -147,7 +147,7 @@ class GameFeatures: Hack(), Listener {
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    fun onPlayerQuitInMinecart(event: PlayerQuitEvent) {
+  fun onPlayerQuitInMinecart(event: PlayerQuitEvent) {
 		if (enableMinecartTeleporter) {
 			val vehicle = event.player.vehicle ?: return
 
