@@ -188,7 +188,7 @@ class GameFeatures: Hack(), Listener {
 		if (!enableMinecartTeleporter) {
 			return
 		}
-		val vehicle = event.vehicle ?: return
+		val vehicle = event.vehicle
 		if (vehicle !is Minecart) {
 			return
 		}
