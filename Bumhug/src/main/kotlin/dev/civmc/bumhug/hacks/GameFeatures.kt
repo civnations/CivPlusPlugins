@@ -7,10 +7,7 @@ import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.block.Biome
-import org.bukkit.entity.Enderman
-import org.bukkit.entity.EntityType
-import org.bukkit.entity.ExperienceOrb
-import org.bukkit.entity.Player
+import org.bukkit.entity.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -20,7 +17,6 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason
 import org.bukkit.event.entity.EntityChangeBlockEvent
-import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
@@ -148,54 +144,70 @@ class GameFeatures: Hack(), Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
   fun onPlayerQuitInMinecart(event: PlayerQuitEvent) {
-		if (enableMinecartTeleporter) {
-			val vehicle = event.player.vehicle ?: return
+		if (!enableMinecartTeleporter) {
+			return
+		}
+		val vehicle = event.player.vehicle ?: return
+		if (vehicle !is Minecart) {
+			return
+		}
 
-			val vehicleLocation = vehicle.location
-			event.player.leaveVehicle()
+		val vehicleLocation = vehicle.location
+		event.player.leaveVehicle()
 
-			if (!tryToTeleportVertically(event.player, vehicleLocation, "logged out")) {
-				event.player.health = 0.000000
-				Bumhug.instance.logger.log(Level.INFO, "Player '${event.player.name}' logged out in vehicle: killed")
-			}
+		if (!tryToTeleportVertically(event.player, vehicleLocation, "logged out")) {
+			event.player.health = 0.000000
+			Bumhug.instance.logger.log(Level.INFO, "Player '${event.player.name}' logged out in vehicle: killed")
 		}
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
 	fun onVehicleExitTeleport(event: VehicleExitEvent) {
-		if (enableMinecartTeleporter) {
-			val player: Player
-			val passenger = event.exited
-			if (passenger is Player) player = passenger else return
-
-			Bukkit.getScheduler().runTaskLater(Bumhug.instance as Plugin, { _ ->
-				if (!tryToTeleportVertically(player, event.vehicle.location, "exiting vehicle")) {
-					player.health = 0.000000
-					Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
-				}
-			}, 2)
+		if (!enableMinecartTeleporter) {
+			return
 		}
+		val vehicle = event.vehicle
+		if (vehicle !is Minecart) {
+			return
+		}
+
+		val player: Player
+		val passenger = event.exited
+		if (passenger is Player) player = passenger else return
+
+		Bukkit.getScheduler().runTaskLater(Bumhug.instance as Plugin, { _ ->
+			if (!tryToTeleportVertically(player, vehicle.location, "exiting vehicle")) {
+				player.health = 0.000000
+				Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
+			}
+		}, 2)
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	fun onVehicleDestoryTeleport(event: VehicleDestroyEvent) {
-		if (enableMinecartTeleporter) {
-			val passangers = event.vehicle.passengers
-			if (passangers.isEmpty()) {
-				return
-			}
+	fun onVehicleDestroyTeleport(event: VehicleDestroyEvent) {
+		if (!enableMinecartTeleporter) {
+			return
+		}
+		val vehicle = event.vehicle ?: return
+		if (vehicle !is Minecart) {
+			return
+		}
 
-			passangers.removeIf { it !is Player }
-			passangers.forEach {
-				run {
-					val player = it as Player
-					Bukkit.getScheduler().runTaskLater(Bumhug.instance, { _ ->
-						if (!tryToTeleportVertically(player, event.vehicle.location, "in destroyed vehicle")) {
-							it.health = 0.000000
-							Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
-						}
-					}, 2)
-				}
+		val passengers = vehicle.passengers
+		if (passengers.isEmpty()) {
+			return
+		}
+
+		passengers.removeIf { it !is Player }
+		passengers.forEach {
+			run {
+				val player = it as Player
+				Bukkit.getScheduler().runTaskLater(Bumhug.instance, { _ ->
+					if (!tryToTeleportVertically(player, vehicle.location, "in destroyed vehicle")) {
+						it.health = 0.000000
+						Bumhug.instance.logger.log(Level.INFO, "Player '${player.name}' exiting vehicle: killed")
+					}
+				}, 2)
 			}
 		}
 	}
