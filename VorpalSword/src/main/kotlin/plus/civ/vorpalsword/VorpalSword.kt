@@ -32,10 +32,10 @@ class VorpalSword: ACivMod() {
 		configManagerStorage = ConfigManager(config)
 		databaseManagerStorage = DatabaseManager()
 
-		registerListener(PlayerEndRestriction())
-		registerListener(PrisonSwordInventoryTracker())
-		registerListener(PlayerCantLeaveEndRestriction())
-		registerListener(PrisonOnKill())
+		registerListener(PlayerEndRestriction)
+		registerListener(PrisonSwordInventoryTracker)
+		registerListener(PlayerCantLeaveEndRestriction)
+		registerListener(PrisonOnKill)
 
 		getCommand("vp")!!.setExecutor(VPCommand())
 	}

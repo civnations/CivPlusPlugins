@@ -14,7 +14,7 @@ import plus.civ.vorpalsword.database.isPrisoned
 /**
  * Teleports the player into the end and keeps them there if they are imprisoned.
  */
-class PlayerEndRestriction: Listener {
+object PlayerEndRestriction: Listener {
 	val randomSpawn = VorpalSword.instance.server.pluginManager.getPlugin("RandomSpawn") as RandomSpawn
 
 	fun sendToEnd(player: Player) {

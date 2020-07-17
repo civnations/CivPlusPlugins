@@ -9,7 +9,7 @@ import plus.civ.vorpalsword.database.isPrisoned
 /**
  * Prevents the player from entering the end portal if they are imprisoned.
  */
-class PlayerCantLeaveEndRestriction: Listener {
+object PlayerCantLeaveEndRestriction: Listener {
 	@EventHandler
 	fun playerPortal(event: PlayerPortalEvent) {
 		if (event.cause != PlayerTeleportEvent.TeleportCause.END_PORTAL) {

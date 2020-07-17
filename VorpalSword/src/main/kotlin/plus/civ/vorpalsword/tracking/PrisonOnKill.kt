@@ -14,7 +14,7 @@ import plus.civ.vorpalsword.database.isPrisoned
 /**
  * Imprisones players if they are killed with a PrisonSword.
  */
-class PrisonOnKill: Listener {
+object PrisonOnKill: Listener {
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val victim = event.entity

@@ -14,7 +14,7 @@ import plus.civ.vorpalsword.database.PrisonSword
 /**
  * Tracks inventory movements for PrisonSwords and updates the database if a PrisonSword has moved.
  */
-class PrisonSwordInventoryTracker: Listener {
+object PrisonSwordInventoryTracker: Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun inventoryClick(event: InventoryClickEvent) {
         // we might have to run these a tick later, not sure
