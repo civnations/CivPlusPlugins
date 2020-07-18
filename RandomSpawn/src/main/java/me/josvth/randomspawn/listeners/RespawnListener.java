@@ -8,9 +8,7 @@ import me.josvth.randomspawn.events.NewPlayerSpawn;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,8 +17,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 public class RespawnListener implements Listener{
 	
-	private RandomSpawn plugin;
-	private Random rng;
+	private final RandomSpawn plugin;
+	private final Random rng;
 	
 	public RespawnListener (RandomSpawn plugin){
 		this.plugin = plugin;
@@ -62,7 +60,7 @@ public class RespawnListener implements Listener{
 		if (spawnPointFlags.contains("newplayer")) {
 			// check if player is still "new", if so, respawn using point logic again.
 			if (event.getPlayer().getFirstPlayed() + 
-					plugin.yamlHandler.worlds.getLong(worldName + ".newplayertime", 0l) > System.currentTimeMillis()) {
+					plugin.yamlHandler.worlds.getLong(worldName + ".newplayertime", 0) > System.currentTimeMillis()) {
 				plugin.logDebug(playerName + " newplayer respawn using Spawn Points");
 				// still a new player, continue.
 				List<Location> spawnLocations = plugin.findSpawnPoints(world);
