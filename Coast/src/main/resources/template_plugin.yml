@@ -1,0 +1,21 @@
+name: ${name}
+version: 1.0.0
+main: plus.civ.coast.Coast
+authors: [1machinemaker1, SepiaTones]
+depend: [CivModCore]
+softdepend: []
+description: waah! meteor hit my house!
+api-version: 1.15
+
+commands:
+  meteor:
+    description: Launch a meteor where the player is currently looking
+    usage: /meteor [radius] [speed]
+    min-args: 0
+    max-args: 2
+    player-only: true
+    permission: coast.admin
+
+permissions:
+  coast.admin:
+    default: op
