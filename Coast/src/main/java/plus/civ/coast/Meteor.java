@@ -57,8 +57,8 @@ public class Meteor extends BukkitRunnable {
 		this.nmsHellManager = Coast.getInstance().getNmsHellManager();
 		this.inv = inv;
 		// Could calculate this on the fly but we cache it because it needs to be used many times per tick
-		// The formula used makes it so that all spheres should get about equally deep into the ground (basically dividing by surface area)
-		this.inertiaDecay = Config.INERTIA_DECAY / (4.0f * (float)Math.PI * radius * radius);
+		// The formula used makes it so that all spheres should get about equally deep into the ground (basically dividing by volume)
+		this.inertiaDecay = Config.INERTIA_DECAY / ((float)Math.PI * radius * radius * radius);
 
         // Initialize blocks array
         int blocksArrayWidth = (int)Math.ceil(radius * 2);
