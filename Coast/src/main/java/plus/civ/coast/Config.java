@@ -14,4 +14,6 @@ public class Config {
 	public static final float DEFAULT_RADIUS = 2.5f;
 	// The factor of velocity a meteor loses for every collision, proportional to its volume (eg this will be lower for bigger meteors)
 	public static final float INERTIA_DECAY = 3.0f;
+	// Factor that explosion power gets multiplied by for the explosions when meteors collide with things
+	public static final float EXPLOSION_POWER_FACTOR = 0.75f;
 }
