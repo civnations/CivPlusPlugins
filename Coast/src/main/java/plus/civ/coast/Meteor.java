@@ -91,8 +91,8 @@ public class Meteor extends BukkitRunnable {
 		this.y += dy;
 		this.z += dz;
 
-		// kill the meteor if it goes too high in the air
-		if (this.y + this.radius * 2 >= 255) {
+		// kill the meteor if it goes too high in the air, or too low underground
+		if (this.y + this.radius * 2 >= 255 || this.y - radius * 2 <= 0) {
 			this.touchdownAndCleanup();
 			return;
 		}
