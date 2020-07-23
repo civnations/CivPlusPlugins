@@ -5,6 +5,9 @@ import net.minecraft.server.v1_15_R1.Blocks;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -23,6 +26,8 @@ public class Meteor extends BukkitRunnable {
     private float dx, dy, dz;
     // Radius of meteor
 	private float radius;
+	// The inventory to be placed in the meteor's chest after it lands
+	private Inventory inv;
 
     // We're gonna search this a lot
     private ArrayList<Location> blockChangesLastFrame = new ArrayList<Location>();
@@ -36,8 +41,9 @@ public class Meteor extends BukkitRunnable {
      * @param dy The y distance to move per in-game tick
      * @param dz The z distance to move per in-game tick
      * @param radius The radius of the meteor in blocks (decimals can be used to mess with the exact shape)
+	 * @param inv The Inventory that will be put in the meteor's chest after it lands
      */
-    public Meteor(World world, float x, float y, float z, float dx, float dy, float dz, float radius) {
+    public Meteor(World world, float x, float y, float z, float dx, float dy, float dz, float radius, Inventory inv) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -47,6 +53,7 @@ public class Meteor extends BukkitRunnable {
 		this.radius = radius;
 		this.world = world;
 		this.nmsHellManager = Coast.getInstance().getNmsHellManager();
+		this.inv = inv;
 
         // Initialize blocks array
         int blocksArrayWidth = (int)Math.ceil(radius * 2);
@@ -161,8 +168,46 @@ public class Meteor extends BukkitRunnable {
 
 	// Called when the meteor is done moving
 	private void touchdownAndCleanup() {
-		// TODO implement
-		// For now, do nothing, just kill self
+		// One last time, change all the blocks, but this time don't skip hollow stuff
+		int xReal = (int)this.x - this.blocks.length / 2;
+		int yReal = (int)this.y - this.blocks[0].length / 2;
+		int zReal = (int)this.z - this.blocks[0][0].length / 2;
+		// For all blocks in the meteor's current hitbox
+		for (int xFake = 0; xFake < this.blocks.length; xFake++) {
+			for (int yFake = 0; yFake < this.blocks[0].length; yFake++) {
+				for (int zFake = 0; zFake < this.blocks[0][0].length; zFake++) {
+					Location loc = new Location(world,xReal + xFake, yReal + yFake, zReal + zFake);
+					Block b = this.blocks[xFake][yFake][zFake];
+
+					if (b != Blocks.AIR) {
+						this.nmsHellManager.setBlockQuickly(loc, b);
+					}
+				}
+			}
+		}
+		this.nmsHellManager.sendQueuedBlockChanges();
+
+		// Set the chest in the middle of the meteor
+		// We wait two seconds with a runnable because otherwise the packets we just sent end up overwriting the chest
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				// Create chest in center of meteor
+				Location chestLoc = new Location(world, (int)x, (int)y, (int)z);
+				org.bukkit.block.Block chestBlock = chestLoc.getBlock();
+				chestBlock.setType(Material.CHEST);
+				Chest chest = ((Chest) chestBlock.getState());
+				// Fill the chest
+				for (ItemStack i : inv.getContents()) {
+					if (i == null) {
+						continue;
+					}
+					chest.getInventory().addItem(i);
+				}
+			}
+		}.runTaskLater(Coast.getInstance(), 40);
+
+		// Cancel the Runnable, we're done
 		this.cancel();
 	}
 
