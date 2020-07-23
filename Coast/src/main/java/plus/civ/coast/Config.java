@@ -4,8 +4,8 @@ import net.minecraft.server.v1_15_R1.Block;
 import net.minecraft.server.v1_15_R1.Blocks;
 
 public class Config {
-	// Blocks that a meteor is made of
-	public static final Block[] METEOR_BLOCKS = {Blocks.OBSIDIAN, Blocks.END_STONE, Blocks.MAGMA_BLOCK};
+	// Blocks that a meteor is made of. You can add duplicates to mess with ratios
+	public static final Block[] METEOR_BLOCKS = {Blocks.OBSIDIAN, Blocks.OBSIDIAN, Blocks.NETHERRACK, Blocks.MAGMA_BLOCK, Blocks.MAGMA_BLOCK};
 	// How many ticks to wait between updating a meteor
 	public static final long TICK_RATE = 3;
 	// Default speed of meteors if no speed is provided
