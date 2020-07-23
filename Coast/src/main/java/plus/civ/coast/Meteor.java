@@ -193,24 +193,18 @@ public class Meteor extends BukkitRunnable {
 		this.nmsHellManager.sendQueuedBlockChanges();
 
 		// Set the chest in the middle of the meteor
-		// We wait two seconds with a runnable because otherwise the packets we just sent end up overwriting the chest
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				// Create chest in center of meteor
-				Location chestLoc = new Location(world, (int)x, (int)y, (int)z);
-				org.bukkit.block.Block chestBlock = chestLoc.getBlock();
-				chestBlock.setType(Material.CHEST);
-				Chest chest = ((Chest) chestBlock.getState());
-				// Fill the chest
-				for (ItemStack i : inv.getContents()) {
-					if (i == null) {
-						continue;
-					}
-					chest.getInventory().addItem(i);
-				}
+		// Create chest in center of meteor
+		Location chestLoc = new Location(world, (int)x, (int)y, (int)z);
+		org.bukkit.block.Block chestBlock = chestLoc.getBlock();
+		chestBlock.setType(Material.CHEST);
+		Chest chest = ((Chest) chestBlock.getState());
+		// Fill the chest
+		for (ItemStack i : inv.getContents()) {
+			if (i == null) {
+				continue;
 			}
-		}.runTaskLater(Coast.getInstance(), 40);
+			chest.getInventory().addItem(i);
+		}
 
 		// Cancel the Runnable, we're done
 		this.cancel();
