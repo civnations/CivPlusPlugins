@@ -17,17 +17,19 @@ public class Meteor extends BukkitRunnable {
 
 	// A blueprint of what the meteor looks like
     private final Block[][][] blocks;
-
+	// The factor of the meteor's velocity subtracted whenever it collides with a block
+	private final float inertiaDecay;
     // The world the meteor is in
-	private World world;
+	private final World world;
+	// Radius of meteor
+	private final float radius;
+	// The inventory to be placed in the meteor's chest after it lands
+	private final Inventory inv;
+
     // Current position
     private float x, y, z;
     // Velocities (per update)
     private float dx, dy, dz;
-    // Radius of meteor
-	private float radius;
-	// The inventory to be placed in the meteor's chest after it lands
-	private Inventory inv;
 
     // We're gonna search this a lot
     private ArrayList<Location> blockChangesLastFrame = new ArrayList<Location>();
@@ -54,6 +56,8 @@ public class Meteor extends BukkitRunnable {
 		this.world = world;
 		this.nmsHellManager = Coast.getInstance().getNmsHellManager();
 		this.inv = inv;
+		// Could calculate this on the fly but we cache it because it needs to be used many times per tick
+		this.inertiaDecay = Config.INERTIA_DECAY / radius;
 
         // Initialize blocks array
         int blocksArrayWidth = (int)Math.ceil(radius * 2);
@@ -96,9 +100,9 @@ public class Meteor extends BukkitRunnable {
 		int collides = setCurrentBlocksAndRemoveOldBlocks();
 
 		// Reduce velocity based on the amount of collisions
-		dx *= (1.0f - Math.min(1.0, collides * 0.03));
-		dy *= (1.0f - Math.min(1.0, collides * 0.03));
-		dz *= (1.0f - Math.min(1.0, collides * 0.03));
+		dx *= (1.0f - Math.min(1.0, collides * this.inertiaDecay));
+		dy *= (1.0f - Math.min(1.0, collides * this.inertiaDecay));
+		dz *= (1.0f - Math.min(1.0, collides * this.inertiaDecay));
 		// If velocity is now quite low, it's time to finish up
 		double magnitude = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
 		if (magnitude <= 0.5) {
