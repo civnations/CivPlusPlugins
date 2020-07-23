@@ -38,26 +38,20 @@ public class CommandMeteor extends StandaloneCommand {
 		// This has to be final because later we want to pass it into an anonymous listener
 		final float radius = radiusTemp;
 
-		float speed = Config.DEFAULT_SPEED;
+		float speedTemp = Config.DEFAULT_SPEED;
 		try {
-			speed = Float.parseFloat(args[1]);
+			speedTemp = Float.parseFloat(args[1]);
 		} catch (NumberFormatException e) {
 			sender.sendMessage("Speed must be a number!");
 			return false;
 		} catch (IndexOutOfBoundsException e) {}
+		final float speed = speedTemp;
 
 		final Player p = (Player)sender;
 		final Location loc = p.getLocation();
 		// Calculate dx, dy, dz for meteor velocity
-		double yaw = Math.toRadians(loc.getYaw());
-		double pitch = Math.toRadians(loc.getPitch());
-		double dxPreNormalized = Math.cos(pitch) * Math.sin(-yaw);
-		double dyPreNormalized = Math.sin(-pitch);
-		double dzPreNormalized = Math.cos(pitch) * Math.cos(yaw);
-		double magnitude = Math.sqrt(Math.pow(dxPreNormalized, 2) + Math.pow(dyPreNormalized, 2) + Math.pow(dzPreNormalized, 2));
-		final float dx = (float)(speed * dxPreNormalized / magnitude);
-		final float dy = (float)(speed * dyPreNormalized / magnitude);
-		final float dz = (float)(speed * dzPreNormalized / magnitude);
+		final float yaw = (float)Math.toRadians(loc.getYaw());
+		final float pitch = (float)Math.toRadians(loc.getPitch());
 
 		// Create the inventory that will go in the meteor
 		Inventory meteorChestInv = Bukkit.getServer().createInventory(p, 27, "Meteor");
@@ -73,7 +67,7 @@ public class CommandMeteor extends StandaloneCommand {
 					return;
 				}
 
-				Coast.getInstance().summonMeteor(loc.getWorld(), (float)loc.getX(), (float)loc.getY(), (float)loc.getZ(), dx, dy, dz, radius, meteorChestInv);
+				Coast.getInstance().summonMeteor(loc.getWorld(), (float)loc.getX(), (float)loc.getY(), (float)loc.getZ(), pitch, yaw, speed, radius, meteorChestInv);
 
 				HandlerList.unregisterAll(this);
 			}

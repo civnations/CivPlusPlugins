@@ -25,6 +25,8 @@ public class Meteor extends BukkitRunnable {
 	private final float radius;
 	// The inventory to be placed in the meteor's chest after it lands
 	private final Inventory inv;
+	// The dx, dy, and dz that we started with, but normalized and multiplied by radius. Later used to place explosions in front of the meteor
+	private final float frontX, frontY, frontZ;
 
     // Current position
     private float x, y, z;
@@ -39,19 +41,16 @@ public class Meteor extends BukkitRunnable {
      * @param x The center x coordinate
      * @param y The center y coordinate
      * @param z The center z coordinate
-     * @param dx The x distance to move per in-game tick
-     * @param dy The y distance to move per in-game tick
-     * @param dz The z distance to move per in-game tick
+     * @param pitch The pitch of the meteor's velocity
+     * @param yaw The yaw of the meteor's velocity
+     * @param speed The meteor's speed (magnitude of velocity)
      * @param radius The radius of the meteor in blocks (decimals can be used to mess with the exact shape)
 	 * @param inv The Inventory that will be put in the meteor's chest after it lands
      */
-    public Meteor(World world, float x, float y, float z, float dx, float dy, float dz, float radius, Inventory inv) {
+    public Meteor(World world, float x, float y, float z, float pitch, float yaw, float speed, float radius, Inventory inv) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.dx = dx;
-		this.dy = dy;
-		this.dz = dz;
 		this.radius = radius;
 		this.world = world;
 		this.nmsHellManager = Coast.getInstance().getNmsHellManager();
@@ -59,6 +58,20 @@ public class Meteor extends BukkitRunnable {
 		// Could calculate this on the fly but we cache it because it needs to be used many times per tick
 		// The formula used makes it so that all spheres should get about equally deep into the ground (basically dividing by volume)
 		this.inertiaDecay = Config.INERTIA_DECAY / ((float)Math.PI * radius * radius * radius);
+		// Calculate dx, dy, dz
+		double dxPreNormalized = Math.cos(pitch) * Math.sin(-yaw);
+		double dyPreNormalized = Math.sin(-pitch);
+		double dzPreNormalized = Math.cos(pitch) * Math.cos(yaw);
+		double magnitude = Math.sqrt(Math.pow(dxPreNormalized, 2) + Math.pow(dyPreNormalized, 2) + Math.pow(dzPreNormalized, 2));
+		double dxNormed = dxPreNormalized / magnitude;
+		double dyNormed = dyPreNormalized / magnitude;
+		double dzNormed = dzPreNormalized / magnitude;
+		this.dx = (float)(speed * dxNormed);
+		this.dy = (float)(speed * dyNormed);
+		this.dz = (float)(speed * dzNormed);
+		this.frontX = (float)((radius + 2) * dxNormed);
+		this.frontY = (float)((radius + 2) * dyNormed);
+		this.frontZ = (float)((radius + 2) * dzNormed);
 
         // Initialize blocks array
         int blocksArrayWidth = (int)Math.ceil(radius * 2);
@@ -99,6 +112,11 @@ public class Meteor extends BukkitRunnable {
 
 		// Set the new blocks, get rid of the old blocks
 		int collides = setCurrentBlocksAndRemoveOldBlocks();
+
+		// Make an explosions depending on how many collides there were
+		Location explosionLoc = new Location(this.world, this.x + this.frontX, this.y + this.frontY, this.z + this.frontZ);
+		final float explosionPower = collides / 2f;
+		this.world.createExplosion(explosionLoc, explosionPower, true, true);
 
 		// Reduce velocity based on the amount of collisions
 		dx *= (1.0f - Math.min(1.0, collides * this.inertiaDecay));
