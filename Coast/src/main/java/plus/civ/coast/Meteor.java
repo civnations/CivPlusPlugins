@@ -114,9 +114,11 @@ public class Meteor extends BukkitRunnable {
 		int collides = setCurrentBlocksAndRemoveOldBlocks();
 
 		// Make an explosions depending on how many collides there were
-		Location explosionLoc = new Location(this.world, this.x + this.frontX, this.y + this.frontY, this.z + this.frontZ);
-		final float explosionPower = collides / 2f;
-		this.world.createExplosion(explosionLoc, explosionPower, true, true);
+		if (collides > 0) {
+			Location explosionLoc = new Location(this.world, this.x + this.frontX, this.y + this.frontY, this.z + this.frontZ);
+			final float explosionPower = collides / 5f;
+			this.world.createExplosion(explosionLoc, explosionPower, true, true);
+		}
 
 		// Reduce velocity based on the amount of collisions
 		dx *= (1.0f - Math.min(1.0, collides * this.inertiaDecay));
