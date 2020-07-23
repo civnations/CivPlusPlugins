@@ -115,9 +115,9 @@ public class Meteor extends BukkitRunnable {
 		Location particleLoc = new Location(this.world, this.x - this.frontX, this.y - this.frontY, this.z - this.frontZ);
 		Location particleLocTwo = new Location(this.world, this.x - this.frontX * 2, this.y - this.frontY * 2, this.z - this.frontZ * 2);
 		Location particleLocThree = new Location(this.world, this.x - this.frontX * 3, this.y - this.frontY * 3, this.z - this.frontZ * 3);
-		this.world.spawnParticle(Particle.FLAME, particleLoc, 8);
-		this.world.spawnParticle(Particle.DRAGON_BREATH, particleLocTwo, 8);
-		this.world.spawnParticle(Particle.SMOKE_LARGE, particleLocThree, 4);
+		this.world.spawnParticle(Particle.FLAME, particleLoc, 32);
+		this.world.spawnParticle(Particle.DRAGON_BREATH, particleLocTwo, 32);
+		this.world.spawnParticle(Particle.SMOKE_LARGE, particleLocThree, 32);
 
 		// Set the new blocks, get rid of the old blocks
 		int collides = setCurrentBlocksAndRemoveOldBlocks();
