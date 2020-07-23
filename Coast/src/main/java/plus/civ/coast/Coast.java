@@ -47,9 +47,11 @@ public class Coast extends ACivMod {
 		int zRounded = Math.round(z / 100) * 100;
 		// Notify the players
 		String message = String.format("%sA meteor has been spotted in the sky above (%d, %d)! It will fall in %.0f minutes!", ChatColor.AQUA, xRounded, zRounded, delay);
+		String titleMessage = String.format("%sFlames in the Sky", ChatColor.AQUA);
+		String subtitleMessage = String.format("%sIt is Near", ChatColor.AQUA);
 		for (Player p : world.getPlayers()) {
 			p.sendMessage(message);
-			p.sendTitle(message, null, 6, 80, 20);
+			p.sendTitle(titleMessage, subtitleMessage, 6, 80, 20);
 		}
 		// Summon the meteor when it's time
 		int delayTicks = (int)(delay * 60 * 20);
@@ -62,9 +64,11 @@ public class Coast extends ACivMod {
 				met.runTaskTimer(Coast.getInstance(), Config.TICK_RATE, Config.TICK_RATE);
 				// Notify the players
 				String message = String.format("%sA meteor is falling near (%d, %d)!", ChatColor.RED, xRounded, zRounded);
+				String titleMessage = String.format("%sIt is Here", ChatColor.RED);
+				String subtitleMessage = String.format("%s%d, %d", ChatColor.RED, xRounded, zRounded);
 				for (Player p : world.getPlayers()) {
 					p.sendMessage(message);
-					p.sendTitle(message, null, 6, 80, 20);
+					p.sendTitle(titleMessage, subtitleMessage, 6, 80, 20);
 				}
 			}
 		}.runTaskLaterAsynchronously(this, delayTicks);
