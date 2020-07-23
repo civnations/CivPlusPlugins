@@ -28,9 +28,18 @@ public class CommandMeteor extends StandaloneCommand {
 			return false;
 		}
 
+		float delayTemp = Config.DEFAULT_DELAY;
+		try {
+			delayTemp = Float.parseFloat(args[0]);
+		} catch (NumberFormatException e) {
+			sender.sendMessage("Delay must be a number!");
+			return false;
+		} catch (ArrayIndexOutOfBoundsException e) { }
+		final float delay = delayTemp;
+
 		float radiusTemp = Config.DEFAULT_RADIUS;
 		try {
-			radiusTemp = Float.parseFloat(args[0]);
+			radiusTemp = Float.parseFloat(args[1]);
 		} catch (NumberFormatException e) {
 			sender.sendMessage("Radius must be a number!");
 			return false;
@@ -40,7 +49,7 @@ public class CommandMeteor extends StandaloneCommand {
 
 		float speedTemp = Config.DEFAULT_SPEED;
 		try {
-			speedTemp = Float.parseFloat(args[1]);
+			speedTemp = Float.parseFloat(args[2]);
 		} catch (NumberFormatException e) {
 			sender.sendMessage("Speed must be a number!");
 			return false;
@@ -67,7 +76,7 @@ public class CommandMeteor extends StandaloneCommand {
 					return;
 				}
 
-				Coast.getInstance().summonMeteor(loc.getWorld(), (float)loc.getX(), (float)loc.getY(), (float)loc.getZ(), pitch, yaw, speed, radius, meteorChestInv);
+				Coast.getInstance().summonMeteor(loc.getWorld(), (float)loc.getX(), (float)loc.getY(), (float)loc.getZ(), pitch, yaw, speed, radius, delay, meteorChestInv);
 
 				HandlerList.unregisterAll(this);
 			}

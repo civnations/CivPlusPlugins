@@ -30,7 +30,7 @@ public class Meteor extends BukkitRunnable {
 	private final float frontX, frontY, frontZ;
 
     // Current position
-    private float x, y, z;
+    protected float x, y, z;
     // Velocities (per update)
     private float dx, dy, dz;
 

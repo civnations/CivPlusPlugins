@@ -8,6 +8,8 @@ public class Config {
 	public static final Block[] METEOR_BLOCKS = {Blocks.OBSIDIAN, Blocks.OBSIDIAN, Blocks.NETHERRACK, Blocks.MAGMA_BLOCK, Blocks.MAGMA_BLOCK};
 	// How many ticks to wait between updating a meteor
 	public static final long TICK_RATE = 3;
+	// Default time in minutes to wait before summoning a meteor
+	public static final float DEFAULT_DELAY = 0.25f;
 	// Default speed of meteors if no speed is provided
 	public static final float DEFAULT_SPEED = 3.0f;
 	// Default radius of meteors if no other radius is provided

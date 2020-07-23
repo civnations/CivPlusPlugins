@@ -10,9 +10,9 @@ api-version: 1.15
 commands:
   meteor:
     description: Launch a meteor where the player is currently looking
-    usage: /meteor [radius] [speed]
+    usage: /meteor [delay] [radius] [speed]
     min-args: 0
-    max-args: 2
+    max-args: 3
     player-only: true
     permission: coast.admin
 
