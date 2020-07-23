@@ -33,6 +33,7 @@ public class CommandMeteor extends StandaloneCommand {
 			radiusTemp = Float.parseFloat(args[0]);
 		} catch (NumberFormatException e) {
 			sender.sendMessage("Radius must be a number!");
+			return false;
 		} catch (ArrayIndexOutOfBoundsException e) { }
 		// This has to be final because later we want to pass it into an anonymous listener
 		final float radius = radiusTemp;
@@ -42,6 +43,7 @@ public class CommandMeteor extends StandaloneCommand {
 			speed = Float.parseFloat(args[1]);
 		} catch (NumberFormatException e) {
 			sender.sendMessage("Speed must be a number!");
+			return false;
 		} catch (IndexOutOfBoundsException e) {}
 
 		final Player p = (Player)sender;
