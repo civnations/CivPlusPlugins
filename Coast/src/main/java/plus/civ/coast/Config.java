@@ -13,5 +13,5 @@ public class Config {
 	// Default radius of meteors if no other radius is provided
 	public static final float DEFAULT_RADIUS = 2.5f;
 	// The factor of velocity a meteor loses for every collision, times the meteors radius (ie higher-radius meteors have this number as smaller for them)
-	public static final float INERTIA_DECAY = 0.09f;
+	public static final float INERTIA_DECAY = 0.03f;
 }
