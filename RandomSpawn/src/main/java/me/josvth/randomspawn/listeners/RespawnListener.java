@@ -8,9 +8,7 @@ import me.josvth.randomspawn.events.NewPlayerSpawn;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,8 +17,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 public class RespawnListener implements Listener{
 	
-	private RandomSpawn plugin;
-	private Random rng;
+	private final RandomSpawn plugin;
+	private final Random rng;
 	
 	public RespawnListener (RandomSpawn plugin){
 		this.plugin = plugin;
@@ -43,15 +41,13 @@ public class RespawnListener implements Listener{
 		
 		List<String> randomSpawnFlags = plugin.yamlHandler.worlds.getStringList(worldName + ".randomspawnon");
 		List<String> spawnPointFlags = plugin.yamlHandler.worlds.getStringList(worldName + ".spawnpointson");
-				
-		if (event.isBedSpawn() && !randomSpawnFlags.contains("bedrespawn")){  		// checks if player should be spawned at his bed
-			Location loc = event.getPlayer().getBedSpawnLocation();
-			if (loc != null) {
-				Block bed = loc.getBlock();
-				if(Tag.BEDS.isTagged(bed.getType())) {
-					plugin.logDebug(playerName + " is spawned at his bed!");
-					return; 
-				}
+
+		// For bedrespawns, if we're not supposed to overwrite them
+		if (event.isBedSpawn() && !randomSpawnFlags.contains("bedrespawn")) {
+			// Ensure that the player has a bed set before returning
+			if (event.getPlayer().getBedSpawnLocation() != null) {
+				plugin.logDebug(playerName + " is spawned at his bed!");
+				return;
 			}
 		}
 		
@@ -64,7 +60,7 @@ public class RespawnListener implements Listener{
 		if (spawnPointFlags.contains("newplayer")) {
 			// check if player is still "new", if so, respawn using point logic again.
 			if (event.getPlayer().getFirstPlayed() + 
-					plugin.yamlHandler.worlds.getLong(worldName + ".newplayertime", 0l) > System.currentTimeMillis()) {
+					plugin.yamlHandler.worlds.getLong(worldName + ".newplayertime", 0) > System.currentTimeMillis()) {
 				plugin.logDebug(playerName + " newplayer respawn using Spawn Points");
 				// still a new player, continue.
 				List<Location> spawnLocations = plugin.findSpawnPoints(world);

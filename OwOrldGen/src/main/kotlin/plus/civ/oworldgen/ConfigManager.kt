@@ -24,7 +24,7 @@ object ConfigManager {
 	val mapImageHeight: Int
 		get() = mapImage.height
 	val radialBiomes: Array<Biome> = arrayOf(
-			Biome.BADLANDS, Biome.BAMBOO_JUNGLE, Biome.BEACH, Biome.BIRCH_FOREST, Biome.DARK_FOREST, Biome.FOREST,
+			Biome.BADLANDS, Biome.BAMBOO_JUNGLE, Biome.DESERT, Biome.BIRCH_FOREST, Biome.DARK_FOREST, Biome.FOREST,
 			Biome.TAIGA, Biome.JUNGLE, Biome.MOUNTAINS, Biome.MUSHROOM_FIELDS, Biome.PLAINS, Biome.SAVANNA, Biome.SWAMP
 	)
 	val biomeAlternatives = HashMap<Biome, Array<Biome>>()
