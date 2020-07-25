@@ -26,7 +26,7 @@ class DatabaseManager {
               
               -- semi-useless data collection ahead
               crafter_uuid varchar(36),
-              crafted_date long,
+              crafted_date bigint, -- java long
               crafted_x int,
               crafted_y int,
               crafted_z int,
@@ -44,16 +44,18 @@ class DatabaseManager {
               player_uuid varchar(36) NOT NULL,
               killer_uuid varchar(36), 
               sword_id INT NOT NULL,
-              prisoned_on long NOT NULL, -- unix time 
-              last_seen long NOT NULL, -- unix time
-              freed_offline bool,
+              prisoned_on bigint NOT NULL, -- unix time 
+              last_seen bigint NOT NULL, -- unix time
               
               PRIMARY KEY (id),
-              FOREIGN KEY (sword_id) REFRENCES swords(id)
+              FOREIGN KEY (sword_id) REFERENCES swords(id)
             )
         """.trimIndent()
 
 		database.registerMigration(0, false, swordsTable, prisonedPlayersTable)
 		database.updateDatabase()
+
+		PrisonSword.initSwordsList()
+		PrisonedPlayer.initPrisonedPlayers()
 	}
 }

@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import plus.civ.vorpalsword.database.*
 import vg.civcraft.mc.namelayer.NameAPI
+import java.lang.NumberFormatException
 
 class VPCommand: CommandExecutor {
 	fun stringLocation(location: Location): String = "[${location.world!!.name} ${location.x} ${location.y} ${location.z}]"
@@ -65,7 +66,10 @@ class VPCommand: CommandExecutor {
 
 				val sword = PrisonSword.fromItemStack(sender.inventory.itemInMainHand)!!
 
-				if (!sword.playersInside.contains(player)) {
+				var hasPlayer = false
+				sword.playersInside.forEach { if (it.player == player) hasPlayer = true }
+
+				if (!hasPlayer) {
 					sender.sendMessage("${ChatColor.RED}That sword does not contain that player.")
 					return true
 				}
@@ -146,7 +150,12 @@ class VPCommand: CommandExecutor {
 					return false
 				}
 
-				player.imprison(null, PrisonSword(args[2].toInt()))
+				try {
+					player.imprison(null, PrisonSword.swords[args[2].toInt()])
+				} catch (e: NumberFormatException) {
+					return false
+				}
+
 				return true
 			}
 

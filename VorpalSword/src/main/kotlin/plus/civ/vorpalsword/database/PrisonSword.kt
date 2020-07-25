@@ -9,12 +9,24 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import plus.civ.vorpalsword.VorpalSword
-import java.sql.Statement
+import plus.civ.vorpalsword.executeUpdateAsync
+import java.sql.Types
 import java.util.*
 import kotlin.collections.ArrayList
 
-class PrisonSword(val id: Int) {
+class PrisonSword private constructor(
+		val id: Int,
+		location: Location,
+		craftedLocation: Location?,
+		crafter: OfflinePlayer?,
+		craftedDate: Long?,
+		howCrafted: String?
+) {
+
 	companion object {
+		private var lastSerialNumber: Int = 0
+		val swords: MutableList<PrisonSword> = mutableListOf()
+
 		/**
 		 * Parses the PrisonSword out of an ItemStack.
 		 *
@@ -49,7 +61,7 @@ class PrisonSword(val id: Int) {
 			if (id == null)
 				return null
 			else
-				return PrisonSword(id)
+				return swords[id]
 		}
 
 		/**
@@ -91,9 +103,11 @@ class PrisonSword(val id: Int) {
 
 		fun createSword(crafter: OfflinePlayer, craftLocation: Location, howCrafted: String): Pair<PrisonSword, ItemStack> {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-				INSERT INTO swords (world,   x, y, z, crafter_uuid, crafted_date, crafted_world, crafted_x, crafted_y, crafted_z, how_crafted)
-				VALUES             ("world", 0, 0, 0, ?,            ?,            ?,             ?,         ?,         ?,         ?)
-			""".trimIndent(), Statement.RETURN_GENERATED_KEYS)
+				INSERT INTO swords (world,   x, y, z, crafter_uuid, crafted_date, crafted_world, crafted_x, crafted_y, crafted_z, how_crafted, id)
+				VALUES             ("world", 0, 0, 0, ?,            ?,            ?,             ?,         ?,         ?,         ?,           ?)
+			""".trimIndent())
+
+			val id = lastSerialNumber + 1
 
 			statement.setString(1, crafter.uniqueId.toString()) // crafter_uuid
 			statement.setLong(2, System.currentTimeMillis() / 1000) // crafted_date (unix time)
@@ -102,14 +116,23 @@ class PrisonSword(val id: Int) {
 			statement.setInt(5, craftLocation.blockY) // crafted_y
 			statement.setInt(6, craftLocation.blockZ) // crafted_z
 			statement.setString(7, howCrafted) // how_crafted
+			statement.setInt(7, lastSerialNumber + 1)
 
-			statement.executeUpdate()
+			statement.executeUpdateAsync()
 
-			val result = statement.generatedKeys
-			result.next()
-			val id = result.getInt(1)
+			lastSerialNumber = id
 
-			val sword = PrisonSword(id)
+			val sword = PrisonSword(
+					id,
+					Location(VorpalSword.instance.server.getWorld("world"), 0.0, 0.0, 0.0),
+					craftLocation,
+					crafter,
+					System.currentTimeMillis() / 100,
+					howCrafted
+			)
+
+			swords.add(sword)
+
 			val item = ItemStack(Material.DIAMOND_SWORD)
 			val meta = VorpalSword.instance.server.itemFactory.getItemMeta(Material.DIAMOND_SWORD)!!
 
@@ -122,6 +145,43 @@ class PrisonSword(val id: Int) {
 
 			assert(VorpalSword.instance.isSwordItem(item))
 			return Pair(sword, item)
+		}
+
+		/**
+		 * Fills out swords with all prison swords from the database.
+		 *
+		 * This function includes sync database calls and must be called on the main thread.
+		 */
+		fun initSwordsList() {
+			val swordsStatement = VorpalSword.databaseManager.database.connection.prepareStatement("SELECT * FROM swords")
+			val swordResult = swordsStatement.executeQuery() // not async, but this is only ran on plugin startup
+
+			while (swordResult.next()) {
+				val id = swordResult.getInt("id")
+				if (id > lastSerialNumber)
+					lastSerialNumber = id
+				val world = swordResult.getString("world")
+				val x = swordResult.getInt("x").toDouble()
+				val y = swordResult.getInt("y").toDouble()
+				val z = swordResult.getInt("z").toDouble()
+				val location = Location(VorpalSword.instance.server.getWorld(world), x, y, z)
+
+				val crafterUUID = swordResult.getString("crafter_uuid")
+				val crafter = if (crafterUUID != null) VorpalSword.instance.server.getOfflinePlayer(
+						UUID.fromString(crafterUUID)) else null
+				val craftedDate = swordResult.getLong("crafted_date")
+				val craftedWorld = swordResult.getString("crafted_world")
+				val craftedX = swordResult.getInt("crafted_x").toDouble()
+				val craftedY = swordResult.getInt("crafted_y").toDouble()
+				val craftedZ = swordResult.getInt("crafted_z").toDouble()
+				val craftedLocation = if (craftedWorld != null)
+					Location(VorpalSword.instance.server.getWorld(craftedWorld), craftedX, craftedY, craftedZ) else null
+				val howCrafted = swordResult.getString("how_crafted")
+
+				val sword = PrisonSword(id, location, craftedLocation, crafter, craftedDate, howCrafted)
+
+				swords[id] = sword
+			}
 		}
 	}
 
@@ -152,12 +212,12 @@ class PrisonSword(val id: Int) {
 		// TODO: Create a better lore format
 		val result = ArrayList<String>()
 
-		result.add("Serial Number: ${id}")
+		result.add("Serial Number: $id")
 		result.add("Contains the following souls: ")
 
 		val players = StringBuilder()
 		for (player in playersInside) {
-			players.append(player.name)
+			players.append(player.player.name)
 			players.append(", ")
 		}
 
@@ -188,7 +248,7 @@ class PrisonSword(val id: Int) {
 	 * Frees every player in this sword.
 	 */
 	fun freeAllPlayers() {
-		playersInside.forEach(OfflinePlayer::freeFromPrison)
+		playersInside.forEach(PrisonedPlayer::freeFromPrison)
 	}
 
 	/**
@@ -204,7 +264,7 @@ class PrisonSword(val id: Int) {
 		// check last known container
 		val location = location
 
-		if (!(location.block.state is Container)) {
+		if (location.block.state !is Container) {
 			freeAllPlayers()
 			return null
 		}
@@ -243,7 +303,7 @@ class PrisonSword(val id: Int) {
 		// check last known container
 		val location = location
 
-		if (!(location.block.state is Container)) {
+		if (location.block.state !is Container) {
 			freeAllPlayers()
 			return null
 		}
@@ -278,20 +338,7 @@ class PrisonSword(val id: Int) {
 	 *
 	 * If the sword is heald by a player, this will be out of date.
 	 */
-	var location: Location
-		get() {
-			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-                SELECT x, y, z, world FROM swords
-                WHERE id=?
-            """.trimIndent())
-			statement.setInt(1, id)
-			val result = statement.executeQuery()
-			val x = result.getInt("x")
-			val y = result.getInt("y")
-			val z = result.getInt("z")
-			val world = result.getString("world")
-			return Location(VorpalSword.instance.server.getWorld(world), x.toDouble(), y.toDouble(), z.toDouble())
-		}
+	var location: Location = location
 		set(newLocation) {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
                 UPDATE swords
@@ -306,40 +353,61 @@ class PrisonSword(val id: Int) {
 
 			statement.setInt(5, id)
 
-			statement.executeUpdate()
+			statement.executeUpdateAsync()
+
+			field = newLocation
 		}
 
 	/**
 	 * The location that this sword was crafted.
 	 */
-	val craftedLocation: Location?
-		get() {
+	var craftedLocation: Location? = craftedLocation
+		set(newLocation) {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-                SELECT crafted_x, crafted_y, crafted_z, crafted_world FROM swords
+                UPDATE swords
+                SET crafted_x=?, crafted_y=?, crafted_z=?, world=?
                 WHERE id=?
             """.trimIndent())
-			statement.setInt(1, id)
-			val result = statement.executeQuery()
-			val x = result.getInt("crafted_x")
-			val y = result.getInt("crafted_y")
-			val z = result.getInt("crafted_z")
-			val world = result.getString("crafted_world")
-			return Location(VorpalSword.instance.server.getWorld(world), x.toDouble(), y.toDouble(), z.toDouble())
+
+			if (newLocation == null) {
+				statement.setNull(1, Types.INTEGER)
+				statement.setNull(2, Types.INTEGER)
+				statement.setNull(3, Types.INTEGER)
+				statement.setNull(4, Types.VARCHAR)
+			} else {
+				statement.setInt(1, newLocation.blockX)
+				statement.setInt(2, newLocation.blockY)
+				statement.setInt(3, newLocation.blockZ)
+				statement.setString(4, newLocation.world!!.name)
+			}
+
+			statement.setInt(5, id)
+
+			statement.executeUpdateAsync()
+
+			field = newLocation
 		}
 
 	/**
 	 * The player that crafted this sword.
 	 */
-	val crafter: OfflinePlayer?
-		get() {
+	var crafter: OfflinePlayer? = crafter
+		set(newCrafter) {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-                SELECT crafter_uuid FROM swords
-                WHERE id=?
-            """.trimIndent())
-			statement.setInt(1, id)
-			val result = statement.executeQuery()
-			val uuidStr = result.getString(1) ?: return null
-			return VorpalSword.instance.server.getOfflinePlayer(UUID.fromString(uuidStr))
+				UPDATE swords
+				SET crafter=?
+				WHERE id=?
+			""".trimIndent())
+
+			if (newCrafter == null) {
+				statement.setNull(1, Types.VARCHAR)
+			} else {
+				statement.setString(1, newCrafter.uniqueId.toString())
+			}
+
+			statement.executeUpdateAsync()
+
+			field = newCrafter
 		}
 
 	/**
@@ -347,38 +415,51 @@ class PrisonSword(val id: Int) {
 	 *
 	 * By "factory", "recipe", "meteor", or something else.
 	 */
-	val howCrafted: String?
-		get() {
+	var howCrafted: String? = howCrafted
+		set(newHowCrafted) {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-                SELECT how_crafted FROM swords
-                WHERE id=?
-            """.trimIndent())
-			statement.setInt(1, id)
-			val result = statement.executeQuery()
-			return result.getString(1)
+				UPDATE swords
+				SET how_crafted=?
+				WHERE id=?
+			""".trimIndent())
+
+			if (newHowCrafted == null) {
+				statement.setNull(1, Types.VARCHAR)
+			} else {
+				statement.setString(1, newHowCrafted)
+			}
+
+			statement.executeUpdateAsync()
+
+			field = newHowCrafted
+		}
+
+	/**
+	 * When the sword was crafted, in unix time.
+	 */
+	var craftedDate: Long? = craftedDate
+		set(newDate) {
+			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
+				UPDATE swords
+				SET crafted_date=?
+				WHERE id=?
+			""".trimIndent())
+
+			if (newDate == null) {
+				statement.setNull(1, Types.BIGINT)
+			} else {
+				statement.setLong(1, newDate)
+			}
+
+			statement.executeUpdateAsync()
+
+			field = newDate
 		}
 
 	/**
 	 * The players currently imprisoned inside this sword.
+	 *
+	 * If a player is pearled, this list MUST be manually updated.
 	 */
-	val playersInside: List<OfflinePlayer>
-		get() {
-			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-            SELECT uuid FROM prisoned_players
-            INNER JOIN swords ON prisoned_players.sword_id=swords.id
-            WHERE swords.id=? 
-        """.trimIndent())
-			statement.setInt(1, id)
-			val result = statement.executeQuery()
-
-			val prisonedPlayers = ArrayList<OfflinePlayer>()
-
-			while (result.next()) {
-				val uuid: String = result.getString("uuid")
-				val offlinePlayer = VorpalSword.instance.server.getOfflinePlayer(UUID.fromString(uuid))
-				prisonedPlayers.add(offlinePlayer)
-			}
-
-			return prisonedPlayers
-		}
+	val playersInside: List<PrisonedPlayer> = mutableListOf()
 }

@@ -9,6 +9,7 @@ import plus.civ.vorpalsword.restriction.PlayerEndRestriction
 import plus.civ.vorpalsword.tracking.PrisonOnKill
 import plus.civ.vorpalsword.tracking.PrisonSwordInventoryTracker
 import vg.civcraft.mc.civmodcore.ACivMod
+import java.sql.PreparedStatement
 import java.util.function.Predicate
 
 class VorpalSword: ACivMod() {
@@ -48,17 +49,7 @@ class VorpalSword: ACivMod() {
 	 * Regenerates all the PrisonSword ItemStacks in the world.
 	 */
 	fun reevaluateSwords() {
-		val statement = databaseManager.database.connection.prepareStatement("""
-			SELECT id FROM swords
-		""".trimIndent())
-		val result = statement.executeQuery()
-
-		while (result.next()) {
-			val id = result.getInt("id")
-			val sword = PrisonSword(id)
-
-			sword.reevaluateItem()
-		}
+		PrisonSword.swords.forEach { it.reevaluateItem() }
 	}
 
 	/**
@@ -73,4 +64,10 @@ class VorpalSword: ACivMod() {
 		return item.type == Material.DIAMOND_SWORD &&
 				item.itemMeta!!.lore!!.stream().anyMatch { line -> line.startsWith("Serial Number: ")}
 	}
+}
+
+internal fun PreparedStatement.executeUpdateAsync() {
+	VorpalSword.instance.server.scheduler.runTaskAsynchronously(VorpalSword.instance, {
+		executeUpdate()
+	} as Runnable)
 }

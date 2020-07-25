@@ -2,87 +2,131 @@ package plus.civ.vorpalsword.database
 
 import org.bukkit.ChatColor
 import org.bukkit.OfflinePlayer
+import org.bukkit.entity.Player
 import plus.civ.vorpalsword.VorpalSword
+import plus.civ.vorpalsword.executeUpdateAsync
+import java.sql.Statement
 import java.sql.Types
+import java.util.*
 
 /**
- * This function makes a databse call.
- *
- * @return If the player is imprisoned within a PrisonSword.
+ * Represents a player that is in a prison pearl.
  */
-fun OfflinePlayer.isPrisoned(): Boolean {
-	val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-        SELECT COUNT(*) FROM prisoned_players WHERE
-          uuid=?
-    """.trimIndent())
-	statement.setString(1, uniqueId.toString())
-	return statement.executeQuery().getInt(1) > 0
-}
+class PrisonedPlayer private constructor(
+		val player: OfflinePlayer,
+		val sword: PrisonSword,
+		val killer: OfflinePlayer?,
+		val prisonedOn: Long,
+		lastSeen: Long,
+		val id: Int
+) {
+	companion object {
+		val prisonedPlayers: MutableMap<OfflinePlayer, PrisonedPlayer> = Collections.synchronizedMap(mutableMapOf())
 
-/**
- * Frees the player from their PrisonSword.
- */
-fun OfflinePlayer.freeFromPrison() {
-	if (!isPrisoned())
-		return
+		fun initPrisonedPlayers() {
+			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
+				SELECT * FROM prisoned_players
+			""".trimIndent())
 
-	val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-        DELETE FROM prisoned_players
-        WHERE uuid=?
-    """.trimIndent())
-	statement.setString(1, uniqueId.toString())
-	statement.executeUpdate()
+			val result = statement.executeQuery()
 
-	if (this.isOnline) {
-		val player = this.player!!
-		player.sendMessage("${ChatColor.GREEN}You have been freed.")
+			while (result.next()) {
+				val id = result.getInt("id")
+				val player = VorpalSword.instance.server.getOfflinePlayer(
+						UUID.fromString(result.getString("player_uuid")))
+				val killerUUID = result.getString("killer_uuid") // not inlined for null check
+				val killer = if (killerUUID != null) VorpalSword.instance.server.getOfflinePlayer(
+						UUID.fromString(killerUUID)) else null
+				val sword = PrisonSword.swords[result.getInt("sword_id")]
+				val prisonedOn = result.getLong("prisoned_on")
+				val lastSeen = result.getLong("last_seen")
+
+				val prisonedPlayer = PrisonedPlayer(player, sword, killer, prisonedOn, lastSeen, id)
+
+				prisonedPlayers[player] = prisonedPlayer
+			}
+		}
+
+		/**
+		 * Imprisons the player within a PrisonSword.
+		 *
+		 * @param killer The player who killed the player, or null if there is none.
+		 *
+		 * @param sword The sword to imprison the player within.
+		 */
+		fun OfflinePlayer.imprison(killer: OfflinePlayer?, sword: PrisonSword) {
+			if (isPrisoned())
+				return
+
+			val now = System.currentTimeMillis() / 1000 // unix time
+
+			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
+        		INSERT INTO prisoned_players (player_uuid, killer_uuid, sword_id, prisoned_on, last_seen)
+        		VALUES                       (?          , ?          , ?       , ?          , ?        )
+    		""".trimIndent(), Statement.RETURN_GENERATED_KEYS)
+			statement.setString(1, uniqueId.toString()) // player_uuid
+			if (killer != null)
+				statement.setString(2, killer.uniqueId.toString()) // killer_uuid
+			else
+				statement.setNull(2, Types.VARCHAR)
+			statement.setInt(3, sword.id) // sword_id
+			statement.setLong(4, now) // prisoned_on (unix time)
+			if (isOnline)
+				statement.setLong(5, now) // last_seen (unix time)
+			else
+				statement.setLong(5, 0)
+
+			VorpalSword.instance.server.scheduler.runTaskAsynchronously(VorpalSword.instance, {
+				statement.executeUpdate()
+
+				val result = statement.generatedKeys
+				val id = result.getInt("id")
+				val prisonedPlayer = PrisonedPlayer(this, sword, killer, now, now, id)
+				prisonedPlayers[this] = prisonedPlayer
+			} as Runnable)
+		}
+
+		fun OfflinePlayer.isPrisoned(): Boolean {
+			return prisonedPlayers.contains(this)
+		}
 	}
-}
 
-/**
- * Imprisons the player within a PrisonSword.
- *
- * @param killer The player who killed the player, or null if there is none.
- *
- * @param sword The sword to imprison the player within.
- */
-fun OfflinePlayer.imprison(killer: OfflinePlayer?, sword: PrisonSword) {
-	if (isPrisoned())
-		return
+	/**
+	 * Frees the player from their PrisonSword.
+	 */
+	fun freeFromPrison() {
+		if (!player.isPrisoned())
+			return
 
-	val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-        INSERT INTO prisoned_players (player_uuid, killer_uuid, sword_id, prisoned_on, last_seen)
-        VALUES                       (?          , ?          , ?       , ?          , ?        )
-    """.trimIndent())
-	statement.setString(1, uniqueId.toString()) // player_uuid
-	if (killer != null)
-		statement.setString(2, killer.uniqueId.toString()) // killer_uuid
-	else
-		statement.setNull(2, Types.VARCHAR)
-	statement.setInt(3, sword.id) // sword_id
-	statement.setLong(4, System.currentTimeMillis() / 1000) // prisoned_on (unix time)
-	if (isOnline)
-		statement.setLong(5, System.currentTimeMillis() / 1000) // last_seen (unix time)
-	else
-		statement.setLong(5, 0)
-}
+		prisonedPlayers.remove(player)
 
-/**
- * Returns the sword the player is imprisoned within.
- *
- * @return The PrisonSword, or null if the player is not imprisoned.
- */
-fun OfflinePlayer.getPrisonSword(): PrisonSword? {
-	if (!isPrisoned())
-		return null
+		val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
+        	DELETE FROM prisoned_players
+        	WHERE uuid=?
+    	""".trimIndent())
+		statement.setString(1, player.uniqueId.toString())
 
-	val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-        SELECT sword_id FROM prisoned_players
-        WHERE uuid=?
-    """.trimIndent())
-	statement.setString(1, uniqueId.toString())
-	val result = statement.executeQuery()
+		statement.executeUpdateAsync()
 
-	val id = result.getInt("sword_id")
-	return PrisonSword(id)
+		if (player.isOnline) {
+			val player: Player = player.player!!
+			player.sendMessage("${ChatColor.GREEN}You have been freed.")
+		}
+	}
+
+	var lastSeen: Long = lastSeen
+		set(newLastSeen) {
+			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
+				UPDATE prisoned_players
+				SET last_seen=?
+				WHERE id=?
+			""".trimIndent())
+
+			statement.setLong(1, newLastSeen)
+			statement.setInt(2, id)
+
+			statement.executeUpdateAsync()
+
+			field = newLastSeen
+		}
 }
