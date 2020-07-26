@@ -7,6 +7,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import plus.civ.vorpalsword.database.*
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.imprison
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 import vg.civcraft.mc.namelayer.NameAPI
 import java.lang.NumberFormatException
 
@@ -48,8 +50,10 @@ class VPCommand: CommandExecutor {
 						return true
 					}
 
-					val sword = player.getPrisonSword()!!
-					player.freeFromPrison()
+					val prisonedPlayer = PrisonedPlayer.prisonedPlayers[player]!!
+
+					val sword = prisonedPlayer.sword
+					prisonedPlayer.freeFromPrison()
 					sword.reevaluateItem()
 					return true
 				}
@@ -74,7 +78,9 @@ class VPCommand: CommandExecutor {
 					return true
 				}
 
-				player.freeFromPrison()
+				val prisonedPlayer = PrisonedPlayer.prisonedPlayers[player]!!
+
+				prisonedPlayer.freeFromPrison()
 				sword.reevaluateItem()
 				sender.sendMessage("${ChatColor.GREEN}Freed ${NameAPI.getCurrentName(player.uniqueId)}.")
 				return true
@@ -91,9 +97,10 @@ class VPCommand: CommandExecutor {
 					return true
 				}
 
-				val sword = sender.getPrisonSword()!!
-				val location = sword.location
-				sword.reevaluateItem() // make /vp locate free players if the item can't be found
+				val prisonedPlayer = PrisonedPlayer.prisonedPlayers[sender]!!
+
+				val location = prisonedPlayer.sword.location
+				prisonedPlayer.sword.reevaluateItem() // make /vp locate free players if the item can't be found
 
 				sender.sendMessage("${ChatColor.GREEN}You are imprisoned in a PrisonSword at ${ChatColor.AQUA}${stringLocation(location)}")
 				return true
@@ -123,7 +130,9 @@ class VPCommand: CommandExecutor {
 					return true
 				}
 
-				val sword = player.getPrisonSword()!!
+				val prisonedPlayer = PrisonedPlayer.prisonedPlayers[player]!!
+
+				val sword = prisonedPlayer.sword
 				val location = sword.location
 				if (sword.reevaluateItem() == null) {
 					sender.sendMessage("${ChatColor.GREEN}Could not find sword, freed all players")

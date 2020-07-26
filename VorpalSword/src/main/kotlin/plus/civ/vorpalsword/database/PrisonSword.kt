@@ -9,6 +9,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import plus.civ.vorpalsword.VorpalSword
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.imprison
 import plus.civ.vorpalsword.executeUpdateAsync
 import java.sql.Types
 import java.util.*
@@ -194,13 +195,6 @@ class PrisonSword private constructor(
 	 */
 	fun imprisonPlayer(player: OfflinePlayer, killer: OfflinePlayer?) {
 		player.imprison(killer, this)
-	}
-
-	/**
-	 * Free a specific player from this sword.
-	 */
-	fun freePlayer(player: OfflinePlayer) {
-		player.freeFromPrison()
 	}
 
 	/**
