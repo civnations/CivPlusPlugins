@@ -1,0 +1,16 @@
+name: ${name}
+version: ${version}
+main: plus.civ.uuidiamonds.UUIDiamonds
+author: Amelorate
+depend: [CivModCore, HiddenOre]
+softdepend: []
+
+commands:
+  spawndiamond:
+    description: Spawn in a UUID Diamond.
+    permission: uuidiamonds.spawndiamond
+
+permissions:
+  uuidiamonds.spawndiamond:
+    description: Allows you to spawn in UUID Diamonds.
+    default: op
