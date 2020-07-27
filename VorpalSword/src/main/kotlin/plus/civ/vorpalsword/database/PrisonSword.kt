@@ -1,16 +1,14 @@
 package plus.civ.vorpalsword.database
 
-import org.bukkit.ChatColor
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.OfflinePlayer
+import org.bukkit.*
 import org.bukkit.block.Container
-import org.bukkit.enchantments.Enchantment
-import org.bukkit.inventory.ItemFlag
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import plus.civ.vorpalsword.VorpalSword
 import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.imprison
 import plus.civ.vorpalsword.executeUpdateAsync
+import plus.civ.vorpalsword.romanEncode
 import java.sql.Types
 import java.util.*
 import kotlin.collections.ArrayList
@@ -27,6 +25,7 @@ class PrisonSword private constructor(
 	companion object {
 		private var lastSerialNumber: Int = 0
 		val swords: MutableList<PrisonSword> = mutableListOf()
+		val swordIdKey = NamespacedKey(VorpalSword.instance, "id")
 
 		/**
 		 * Parses the PrisonSword out of an ItemStack.
@@ -34,31 +33,7 @@ class PrisonSword private constructor(
 		 * @return The sword, or null if the ItemStack was not a valid sword.
 		 */
 		fun fromItemStack(item: ItemStack): PrisonSword? {
-			if (!item.hasItemMeta())
-				return null
-			if (!item.itemMeta!!.hasLore())
-				return null
-
-			return fromItemLore(item.itemMeta!!.lore!!)
-		}
-
-		/**
-		 * Parses the PrisonSword out of an item's lore.
-		 *
-		 * This is used inside fromItemStack()
-		 *
-		 * @return The sword, or null if there was a syntax error.
-		 */
-		fun fromItemLore(lore: List<String>): PrisonSword? {
-			var id: Int? = null
-
-			for (line in lore) {
-				// TODO: Allow configuration of serial number format
-				if (line.startsWith("Serial Number: ")) {
-					id = line.removePrefix("Serial Number: ").toInt()
-				}
-			}
-
+			val id = getSerialNumber(item)
 			if (id == null)
 				return null
 			else
@@ -73,33 +48,8 @@ class PrisonSword private constructor(
 		fun getSerialNumber(item: ItemStack): Int? {
 			if (!item.hasItemMeta())
 				return null
-			if (!item.itemMeta!!.hasLore())
-				return null
 
-			return item.itemMeta!!.lore?.let { getSerialNumber(it) }
-		}
-
-		/**
-		 * Returns the serial number of a sword from an item's lore.
-		 *
-		 * Used inside getSerialNumber(ItemStack).
-		 *
-		 * @return The serial number, or null if there was a syntax error.
-		 */
-		fun getSerialNumber(lore: List<String>): Int? {
-			var id: Int? = null
-
-			for (line in lore) {
-				// TODO: Allow configuration of serial number format
-				if (line.startsWith("Serial Number: ")) {
-					id = line.removePrefix("Serial Number: ").toInt()
-				}
-			}
-
-			if (id == null)
-				return null
-			else
-				return id
+			return item.itemMeta!!.persistentDataContainer.get(swordIdKey, PersistentDataType.INTEGER)
 		}
 
 		fun createSword(crafter: OfflinePlayer, craftLocation: Location, howCrafted: String): Pair<PrisonSword, ItemStack> {
@@ -117,7 +67,7 @@ class PrisonSword private constructor(
 			statement.setInt(5, craftLocation.blockY) // crafted_y
 			statement.setInt(6, craftLocation.blockZ) // crafted_z
 			statement.setString(7, howCrafted) // how_crafted
-			statement.setInt(8, lastSerialNumber + 1)
+			statement.setInt(8, id)
 
 			statement.executeUpdateAsync()
 
@@ -138,10 +88,8 @@ class PrisonSword private constructor(
 			val meta = VorpalSword.instance.server.itemFactory.getItemMeta(Material.DIAMOND_SWORD)!!
 
 			meta.lore = sword.generateLore()
-			meta.setDisplayName("${ChatColor.RESET}Prison Sword")
-			meta.addEnchant(Enchantment.DURABILITY, 10, true)
 			meta.isUnbreakable = true
-			meta.itemFlags.add(ItemFlag.HIDE_UNBREAKABLE)
+			meta.persistentDataContainer.set(swordIdKey, PersistentDataType.INTEGER, id)
 			item.itemMeta = meta
 
 			assert(VorpalSword.instance.isSwordItem(item))
@@ -203,19 +151,16 @@ class PrisonSword private constructor(
 	 * Called by reevaluateItem().
 	 */
 	fun generateLore(): List<String> {
-		// TODO: Create a better lore format
 		val result = ArrayList<String>()
 
-		result.add("Serial Number: $id")
-		result.add("Contains the following souls: ")
-
-		val players = StringBuilder()
 		for (player in playersInside) {
-			players.append(player.player.name)
-			players.append(", ")
+			player.player.name?.let { result.add("${ChatColor.AQUA}$it") } // add name if not null
+			// no idea why name might be null
 		}
 
-		result.add(players.toString())
+		result.add("")
+
+		result.add("${ChatColor.RESET}Vorpal " + romanEncode(playersInside.size))
 
 		return result
 	}
@@ -455,5 +400,21 @@ class PrisonSword private constructor(
 	 *
 	 * If a player is pearled, this list MUST be manually updated.
 	 */
-	val playersInside: List<PrisonedPlayer> = mutableListOf()
+	val playersInside: MutableSet<PrisonedPlayer> = mutableSetOf()
+
+	/**
+	 * The player that is holding the sword, or null if it is in a container.
+	 */
+	val holdingPlayer: Player?
+		get() {
+			for (player in VorpalSword.instance.server.onlinePlayers) {
+				for ((index, containerItem) in player.inventory.contents.withIndex()) {
+					if (VorpalSword.instance.isSwordItem(containerItem) && fromItemStack(containerItem)!!.id == id) {
+						return player
+					}
+				}
+			}
+
+			return null
+		}
 }

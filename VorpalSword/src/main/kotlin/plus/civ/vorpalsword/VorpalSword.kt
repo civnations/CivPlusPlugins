@@ -2,6 +2,7 @@ package plus.civ.vorpalsword
 
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import plus.civ.vorpalsword.database.DatabaseManager
 import plus.civ.vorpalsword.database.PrisonSword
 import plus.civ.vorpalsword.database.PrisonedPlayer
@@ -68,7 +69,7 @@ class VorpalSword: ACivMod() {
 			return false
 
 		return item.type == Material.DIAMOND_SWORD &&
-				item.itemMeta!!.lore!!.stream().anyMatch { line -> line.startsWith("Serial Number: ")}
+				item.itemMeta!!.persistentDataContainer.has(PrisonSword.swordIdKey, PersistentDataType.INTEGER)
 	}
 }
 
@@ -77,3 +78,35 @@ internal fun PreparedStatement.executeUpdateAsync() {
 		executeUpdate()
 	})
 }
+
+fun romanEncode(number: Int): String {
+	val romanNumerals = mapOf(
+			1000 to "M",
+			900 to "CM",
+			500 to "D",
+			400 to "CD",
+			100 to "C",
+			90 to "XC",
+			50 to "L",
+			40 to "XL",
+			10 to "X",
+			9 to "IX",
+			5 to "V",
+			4 to "IV",
+			1 to "I"
+	)
+
+	if (number == 0)
+		return ""
+
+	var num = number
+	val result = StringBuffer()
+	for ((multiple, numeral) in romanNumerals.entries) {
+		while (num >= multiple) {
+			num -= multiple
+			result.append(numeral)
+		}
+	}
+	return result.toString()
+}
+

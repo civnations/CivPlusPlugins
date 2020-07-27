@@ -99,6 +99,13 @@ object VPCommand: CommandExecutor {
 
 				val prisonedPlayer = PrisonedPlayer.prisonedPlayers[sender]!!
 
+				val player = prisonedPlayer.sword.holdingPlayer
+				if (player != null) {
+					sender.sendMessage("${ChatColor.GREEN} You are imprisoned in a PrisonSword held by ${ChatColor.AQUA}${player.displayName}${ChatColor.GREEN} at ${ChatColor.AQUA}${stringLocation(player.location)}")
+					prisonedPlayer.sword.reevaluateItem()
+					return true
+				}
+
 				val location = prisonedPlayer.sword.location
 				prisonedPlayer.sword.reevaluateItem() // make /vp locate free players if the item can't be found
 

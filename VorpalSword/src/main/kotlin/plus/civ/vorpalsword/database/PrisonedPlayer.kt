@@ -87,6 +87,7 @@ class PrisonedPlayer private constructor(
 
 			val prisonedPlayer = PrisonedPlayer(this, sword, killer, now, now, id)
 			prisonedPlayers[this] = prisonedPlayer
+			sword.playersInside.add(prisonedPlayer)
 
 			return prisonedPlayer
 		}
@@ -117,6 +118,9 @@ class PrisonedPlayer private constructor(
 			val player: Player = player.player!!
 			player.sendMessage("${ChatColor.GREEN}You have been freed.")
 		}
+
+		sword.playersInside.remove(this)
+		sword.reevaluateItem()
 	}
 
 	var lastSeen: Long = lastSeen
@@ -134,4 +138,5 @@ class PrisonedPlayer private constructor(
 
 			field = newLastSeen
 		}
+
 }
