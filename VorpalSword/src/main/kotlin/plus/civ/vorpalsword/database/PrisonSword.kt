@@ -181,7 +181,7 @@ class PrisonSword private constructor(
 
 				val sword = PrisonSword(id, location, craftedLocation, crafter, craftedDate, howCrafted)
 
-				swords[id] = sword
+				swords.add(id, sword)
 			}
 		}
 	}
