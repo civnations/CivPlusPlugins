@@ -22,6 +22,7 @@ class PrisonedPlayer private constructor(
 ) {
 	companion object {
 		val prisonedPlayers: MutableMap<OfflinePlayer, PrisonedPlayer> = Collections.synchronizedMap(mutableMapOf())
+		private var lastId: Int = 0
 
 		fun initPrisonedPlayers() {
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
@@ -32,6 +33,9 @@ class PrisonedPlayer private constructor(
 
 			while (result.next()) {
 				val id = result.getInt("id")
+				if (id > lastId)
+					lastId = id
+
 				val player = VorpalSword.instance.server.getOfflinePlayer(
 						UUID.fromString(result.getString("player_uuid")))
 				val killerUUID = result.getString("killer_uuid") // not inlined for null check
@@ -54,15 +58,17 @@ class PrisonedPlayer private constructor(
 		 *
 		 * @param sword The sword to imprison the player within.
 		 */
-		fun OfflinePlayer.imprison(killer: OfflinePlayer?, sword: PrisonSword) {
+		fun OfflinePlayer.imprison(killer: OfflinePlayer?, sword: PrisonSword): PrisonedPlayer {
 			if (isPrisoned())
-				return
+				return prisonedPlayers[this]!!
 
 			val now = System.currentTimeMillis() / 1000 // unix time
+			val id = lastId
+			lastId++
 
 			val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
-        		INSERT INTO prisoned_players (player_uuid, killer_uuid, sword_id, prisoned_on, last_seen)
-        		VALUES                       (?          , ?          , ?       , ?          , ?        )
+        		INSERT INTO prisoned_players (player_uuid, killer_uuid, sword_id, prisoned_on, last_seen, id)
+        		VALUES                       (?          , ?          , ?       , ?          , ?        , ?)
     		""".trimIndent(), Statement.RETURN_GENERATED_KEYS)
 			statement.setString(1, uniqueId.toString()) // player_uuid
 			if (killer != null)
@@ -75,15 +81,14 @@ class PrisonedPlayer private constructor(
 				statement.setLong(5, now) // last_seen (unix time)
 			else
 				statement.setLong(5, 0)
+			statement.setInt(6, id)
 
-			VorpalSword.instance.server.scheduler.runTaskAsynchronously(VorpalSword.instance, {
-				statement.executeUpdate()
+			statement.executeUpdateAsync()
 
-				val result = statement.generatedKeys
-				val id = result.getInt("id")
-				val prisonedPlayer = PrisonedPlayer(this, sword, killer, now, now, id)
-				prisonedPlayers[this] = prisonedPlayer
-			} as Runnable)
+			val prisonedPlayer = PrisonedPlayer(this, sword, killer, now, now, id)
+			prisonedPlayers[this] = prisonedPlayer
+
+			return prisonedPlayer
 		}
 
 		fun OfflinePlayer.isPrisoned(): Boolean {

@@ -1,8 +1,6 @@
 package plus.civ.vorpalsword.tracking
 
 import net.minelink.ctplus.CombatTagPlus
-import net.minelink.ctplus.event.PlayerCombatTagEvent
-import org.bukkit.OfflinePlayer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
