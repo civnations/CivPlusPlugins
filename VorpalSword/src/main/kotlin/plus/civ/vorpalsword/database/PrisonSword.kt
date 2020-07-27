@@ -117,7 +117,7 @@ class PrisonSword private constructor(
 			statement.setInt(5, craftLocation.blockY) // crafted_y
 			statement.setInt(6, craftLocation.blockZ) // crafted_z
 			statement.setString(7, howCrafted) // how_crafted
-			statement.setInt(7, lastSerialNumber + 1)
+			statement.setInt(8, lastSerialNumber + 1)
 
 			statement.executeUpdateAsync()
 
