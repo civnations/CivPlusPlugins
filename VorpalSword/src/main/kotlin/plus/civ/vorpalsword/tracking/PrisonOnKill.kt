@@ -33,6 +33,8 @@ object PrisonOnKill: Listener {
         val attackerInventory = attacker.player?.inventory!!.contents
 
         for ((hotbarSlot, item) in (0..8).zip(attackerInventory)) {
+			if (item == null)
+				continue
             if (!VorpalSword.instance.isSwordItem(item)) {
                 continue
             }
