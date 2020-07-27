@@ -46,7 +46,8 @@ class DatabaseManager {
               sword_id INT NOT NULL,
               prisoned_on bigint NOT NULL, -- unix time 
               last_seen bigint NOT NULL, -- unix time
-              PRIMARY KEY (id),
+			  
+              PRIMARY KEY (id)
             )
         """.trimIndent()
 
