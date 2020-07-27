@@ -48,7 +48,7 @@ class DatabaseManager {
               last_seen bigint NOT NULL, -- unix time
               
               PRIMARY KEY (id),
-              FOREIGN KEY (sword_id) REFERENCES swords(id)
+              FOREIGN KEY (sword_id) REFERENCES swords(id) ON DELETE CASCADE
             )
         """.trimIndent()
 
