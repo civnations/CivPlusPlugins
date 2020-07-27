@@ -4,6 +4,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import plus.civ.vorpalsword.database.DatabaseManager
 import plus.civ.vorpalsword.database.PrisonSword
+import plus.civ.vorpalsword.database.PrisonedPlayer
 import plus.civ.vorpalsword.restriction.PlayerCantLeaveEndRestriction
 import plus.civ.vorpalsword.restriction.PlayerEndRestriction
 import plus.civ.vorpalsword.tracking.FreeManInEndMessage
@@ -33,6 +34,9 @@ class VorpalSword: ACivMod() {
 		instanceStorage = this
 		configManagerStorage = ConfigManager(config)
 		databaseManagerStorage = DatabaseManager()
+
+		PrisonSword.initSwordsList()
+		PrisonedPlayer.initPrisonedPlayers()
 
 		registerListener(PlayerEndRestriction)
 		registerListener(PrisonSwordInventoryTracker)

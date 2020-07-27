@@ -54,8 +54,5 @@ class DatabaseManager {
 
 		database.registerMigration(0, false, swordsTable, prisonedPlayersTable)
 		database.updateDatabase()
-
-		PrisonSword.initSwordsList()
-		PrisonedPlayer.initPrisonedPlayers()
 	}
 }
