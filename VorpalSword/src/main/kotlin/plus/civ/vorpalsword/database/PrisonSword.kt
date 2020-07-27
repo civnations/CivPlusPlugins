@@ -62,7 +62,7 @@ class PrisonSword private constructor(
 			if (id == null)
 				return null
 			else
-				return swords[id - 1]
+				return swords[id]
 		}
 
 		/**
