@@ -10,6 +10,8 @@ import com.devotedmc.ExilePearl.ExilePearl;
 
 import vg.civcraft.mc.civmodcore.util.Guard;
 
+import java.util.Objects;
+
 /**
  * A player holding an exile pearl
  * @author Gordon
@@ -91,6 +93,11 @@ public class PlayerHolder implements PearlHolder {
         PlayerHolder other = (PlayerHolder) o;
 
 		return player.equals(other.player);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(player);
 	}
 
 	@Override

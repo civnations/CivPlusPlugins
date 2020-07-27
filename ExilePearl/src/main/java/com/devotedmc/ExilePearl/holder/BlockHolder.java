@@ -15,6 +15,8 @@ import com.devotedmc.ExilePearl.ExilePearl;
 import vg.civcraft.mc.civmodcore.api.BlockAPI;
 import vg.civcraft.mc.civmodcore.util.Guard;
 
+import java.util.Objects;
+
 /**
  * A block holding an exile pearl
  * @author Gordon
@@ -138,6 +140,11 @@ public class BlockHolder implements PearlHolder {
         BlockHolder other = (BlockHolder) o;
 
 		return block.equals(other.block);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(block);
 	}
 
 	@Override
