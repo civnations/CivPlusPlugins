@@ -62,7 +62,7 @@ class PrisonSword private constructor(
 			if (id == null)
 				return null
 			else
-				return swords[id]
+				return swords[id - 1]
 		}
 
 		/**
@@ -108,7 +108,7 @@ class PrisonSword private constructor(
 				VALUES             ("world", 0, 0, 0, ?,            ?,            ?,             ?,         ?,         ?,         ?,           ?)
 			""".trimIndent())
 
-			val id = lastSerialNumber + 1
+			val id = lastSerialNumber
 
 			statement.setString(1, crafter.uniqueId.toString()) // crafter_uuid
 			statement.setLong(2, System.currentTimeMillis() / 1000) // crafted_date (unix time)
@@ -121,7 +121,7 @@ class PrisonSword private constructor(
 
 			statement.executeUpdateAsync()
 
-			lastSerialNumber = id
+			lastSerialNumber++
 
 			val sword = PrisonSword(
 					id,
