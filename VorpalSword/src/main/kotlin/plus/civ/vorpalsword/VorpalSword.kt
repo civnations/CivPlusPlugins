@@ -73,7 +73,7 @@ class VorpalSword: ACivMod() {
 }
 
 internal fun PreparedStatement.executeUpdateAsync() {
-	VorpalSword.instance.server.scheduler.runTaskAsynchronously(VorpalSword.instance, {
+	VorpalSword.instance.server.scheduler.runTaskAsynchronously(VorpalSword.instance, Runnable {
 		executeUpdate()
-	} as Runnable)
+	})
 }

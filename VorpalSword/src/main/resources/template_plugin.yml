@@ -1,5 +1,5 @@
 name: ${name}
-version: ${version}
+version: 1.0.0
 main: plus.civ.vorpalsword.VorpalSword
 author: Amelorate
 depend: [RandomSpawn, CivModCore, CombatTagPlus, NameLayer]
