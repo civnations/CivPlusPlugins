@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerPortalEvent
 import org.bukkit.event.player.PlayerTeleportEvent
-import plus.civ.vorpalsword.database.isPrisoned
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 
 /**
  * Prevents the player from entering the end portal if they are imprisoned.

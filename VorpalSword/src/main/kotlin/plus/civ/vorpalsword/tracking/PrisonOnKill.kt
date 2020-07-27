@@ -8,8 +8,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 import plus.civ.vorpalsword.VorpalSword
 import plus.civ.vorpalsword.database.PrisonSword
-import plus.civ.vorpalsword.database.imprison
-import plus.civ.vorpalsword.database.isPrisoned
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.imprison
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 
 /**
  * Imprisones players if they are killed with a PrisonSword.

@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerRespawnEvent
 import plus.civ.vorpalsword.VorpalSword
-import plus.civ.vorpalsword.database.isPrisoned
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 
 /**
  * Teleports the player into the end and keeps them there if they are imprisoned.

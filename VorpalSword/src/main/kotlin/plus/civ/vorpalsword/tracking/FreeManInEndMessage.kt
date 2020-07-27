@@ -5,7 +5,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import plus.civ.vorpalsword.VorpalSword
-import plus.civ.vorpalsword.database.isPrisoned
+import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 
 object FreeManInEndMessage: Listener {
 	@EventHandler
