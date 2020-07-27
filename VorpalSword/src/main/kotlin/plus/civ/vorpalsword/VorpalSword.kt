@@ -40,7 +40,7 @@ class VorpalSword: ACivMod() {
 		registerListener(PrisonOnKill)
 		registerListener(FreeManInEndMessage)
 
-		getCommand("vp")!!.setExecutor(VPCommand())
+		getCommand("vp")!!.setExecutor(VPCommand)
 	}
 
 	//override fun getPluginName(): String {

@@ -12,7 +12,7 @@ import plus.civ.vorpalsword.database.PrisonedPlayer.Companion.isPrisoned
 import vg.civcraft.mc.namelayer.NameAPI
 import java.lang.NumberFormatException
 
-class VPCommand: CommandExecutor {
+object VPCommand: CommandExecutor {
 	fun stringLocation(location: Location): String = "[${location.world!!.name} ${location.x} ${location.y} ${location.z}]"
 
 	override fun onCommand(sender: CommandSender, command: Command, name: String, args: Array<out String>): Boolean {
