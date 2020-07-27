@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import net.minelink.ctplus.api.NpcNameGeneratorFactory;
 import net.minelink.ctplus.api.NpcPlayerHelper;
-import net.minelink.ctplus.hook.Hook;
 import net.minelink.ctplus.hook.HookManager;
 import net.minelink.ctplus.listener.ForceFieldListener;
 import net.minelink.ctplus.listener.InstakillListener;
@@ -15,15 +14,12 @@ import net.minelink.ctplus.task.ForceFieldTask;
 import net.minelink.ctplus.task.SafeLogoutTask;
 import net.minelink.ctplus.task.TagUpdateTask;
 import net.minelink.ctplus.util.BarUtils;
-import net.minelink.ctplus.util.ReflectionUtils;
-import net.minelink.ctplus.util.Version;
 import net.minelink.ctplus.nms.NpcPlayerHelperImpl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import static org.bukkit.ChatColor.*;

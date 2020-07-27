@@ -1,11 +1,6 @@
 package vg.civcraft.mc.namelayer.group;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 import com.google.common.collect.Lists;
@@ -606,5 +601,10 @@ public class Group {
 			return false;
 		Group g = (Group) obj;
 		return g.getName().equals(this.getName()); // If they have the same name they are equal.
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, id);
 	}
 }

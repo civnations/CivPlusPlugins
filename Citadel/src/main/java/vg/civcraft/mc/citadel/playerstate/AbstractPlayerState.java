@@ -108,4 +108,8 @@ public abstract class AbstractPlayerState {
 	@Override
 	public abstract boolean equals(Object o);
 
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 }

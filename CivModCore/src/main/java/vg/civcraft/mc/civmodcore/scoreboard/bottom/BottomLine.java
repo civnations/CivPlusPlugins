@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import org.bukkit.Bukkit;
@@ -88,6 +89,11 @@ public class BottomLine implements Comparable<BottomLine>{
 	@Override
 	public boolean equals(Object o) {
 		return o == this;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(texts, identifier, updater, priority);
 	}
 
 	@Override
