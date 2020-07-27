@@ -6,6 +6,7 @@ import plus.civ.vorpalsword.database.DatabaseManager
 import plus.civ.vorpalsword.database.PrisonSword
 import plus.civ.vorpalsword.restriction.PlayerCantLeaveEndRestriction
 import plus.civ.vorpalsword.restriction.PlayerEndRestriction
+import plus.civ.vorpalsword.tracking.FreeManInEndMessage
 import plus.civ.vorpalsword.tracking.PrisonOnKill
 import plus.civ.vorpalsword.tracking.PrisonSwordInventoryTracker
 import vg.civcraft.mc.civmodcore.ACivMod
@@ -37,6 +38,7 @@ class VorpalSword: ACivMod() {
 		registerListener(PrisonSwordInventoryTracker)
 		registerListener(PlayerCantLeaveEndRestriction)
 		registerListener(PrisonOnKill)
+		registerListener(FreeManInEndMessage)
 
 		getCommand("vp")!!.setExecutor(VPCommand())
 	}
