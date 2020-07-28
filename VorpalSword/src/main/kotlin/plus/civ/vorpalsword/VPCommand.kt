@@ -214,6 +214,17 @@ object VPCommand: CommandExecutor {
 				sender.inventory.addItem(item)
 				return true
 			}
+
+			"show" -> {
+				if (sender !is Player) {
+					return false
+				}
+
+				val player = sender as Player
+				val item = player.inventory.itemInMainHand
+				val sword = PrisonSword.fromItemStack(item)!!
+				sender.sendMessage(sword.id.toString())
+			}
 		}
 
 		return false
