@@ -46,6 +46,10 @@ object PrisonSwordInventoryTracker: Listener {
         }
 
         for (item in inventory.contents) {
+			if (item == null) {
+				continue
+			}
+
             if (!VorpalSword.instance.isSwordItem(item)) {
                 continue
             }

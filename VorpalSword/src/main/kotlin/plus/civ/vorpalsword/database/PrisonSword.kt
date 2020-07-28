@@ -409,6 +409,10 @@ class PrisonSword private constructor(
 		get() {
 			for (player in VorpalSword.instance.server.onlinePlayers) {
 				for ((index, containerItem) in player.inventory.contents.withIndex()) {
+					if (containerItem == null) {
+						continue
+					}
+
 					if (VorpalSword.instance.isSwordItem(containerItem) && fromItemStack(containerItem)!!.id == id) {
 						return player
 					}
