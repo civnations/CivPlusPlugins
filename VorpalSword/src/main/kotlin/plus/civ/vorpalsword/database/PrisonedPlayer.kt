@@ -108,7 +108,7 @@ class PrisonedPlayer private constructor(
 
 		val statement = VorpalSword.databaseManager.database.connection.prepareStatement("""
         	DELETE FROM prisoned_players
-        	WHERE uuid=?
+        	WHERE player_uuid=?
     	""".trimIndent())
 		statement.setString(1, player.uniqueId.toString())
 
