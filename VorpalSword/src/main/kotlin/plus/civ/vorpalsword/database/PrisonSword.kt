@@ -158,6 +158,7 @@ class PrisonSword private constructor(
 			// no idea why name might be null
 		}
 
+		if (!playersInside.isEmpty())
 		result.add("")
 
 		result.add("${ChatColor.GRAY}Vorpal " + romanEncode(playersInside.size))
@@ -249,6 +250,8 @@ class PrisonSword private constructor(
 
 		val container = location.block.state as Container
 		for ((index, containerItem) in container.inventory.contents.withIndex()) {
+			if (containerItem == null)
+				continue
 			if (VorpalSword.instance.isSwordItem(containerItem) && fromItemStack(containerItem)!!.id == id) {
 				container.inventory.contents[index] = item
 				return containerItem
@@ -258,6 +261,8 @@ class PrisonSword private constructor(
 		// try all online players
 		for (player in VorpalSword.instance.server.onlinePlayers) {
 			for ((index, containerItem) in player.inventory.contents.withIndex()) {
+				if (containerItem == null)
+					continue
 				if (VorpalSword.instance.isSwordItem(containerItem) && fromItemStack(containerItem)!!.id == id) {
 					container.inventory.contents[index] = item
 					return containerItem
