@@ -160,7 +160,7 @@ class PrisonSword private constructor(
 
 		result.add("")
 
-		result.add("${ChatColor.RESET}Vorpal " + romanEncode(playersInside.size))
+		result.add("${ChatColor.GRAY}Vorpal " + romanEncode(playersInside.size))
 
 		return result
 	}
